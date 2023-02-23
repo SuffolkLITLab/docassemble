@@ -1,7 +1,7 @@
 FROM jhpyle/docassemble-os:1.0.30
 USER root
 
-COPY . /tmp/docassemble/
+COPY ./Docker/nginx.conf /tmp/docassemble/Docker/nginx.conf
 
 # Update nginx to latest stable over the default in Ubuntu 24.04
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
@@ -15,6 +15,8 @@ bash -c \
 && apt-get -q -y install nginx \
 && cp /tmp/docassemble/Docker/nginx.conf /etc/nginx/ \
 && rm /etc/nginx/conf.d/default.conf"
+
+COPY --chown=www-data . /tmp/docassemble/
 
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
 bash -c \
@@ -56,16 +58,22 @@ bash -c \
 && cp /tmp/docassemble/Docker/nascent.html /var/www/nascent/index.html \
 && update-exim4.conf \
 && chown -R www-data:www-data \
+   /usr/share/docassemble/local3.14 \
    /usr/share/docassemble/log \
    /usr/share/docassemble/files \
 && chmod ogu+r /usr/share/docassemble/config/config.yml.dist \
 && chmod 755 /etc/ssl/docassemble \
+&& chown -R www-data:www-data \
+   /usr/share/docassemble/config \
 && cd /tmp \
 && /usr/bin/pip3 install --break-system-packages unoserver==3.6 \
 && cp /usr/local/bin/unoserver /usr/bin/unoserver \
-&& cp /usr/local/bin/unoconvert /usr/bin/unoconvert \
-&& python3 -m venv --copies /usr/share/docassemble/local3.14 \
-&& source /usr/share/docassemble/local3.14/bin/activate \
+&& cp /usr/local/bin/unoconvert /usr/bin/unoconvert"
+
+USER www-data
+RUN bash -c \
+"python3 -m venv --copies /usr/share/docassemble/local3.14 \
+ && source /usr/share/docassemble/local3.14/bin/activate \
 && pip install --upgrade pip==26.0.1 \
 && pip install --upgrade mod_wsgi==5.0.2 \
 && pip install --upgrade \
@@ -77,8 +85,11 @@ bash -c \
 && pip install \
    /tmp/docassemble/docassemble_base \
    /tmp/docassemble/docassemble_demo \
-   /tmp/docassemble/docassemble_webapp \
-&& mv /etc/crontab /usr/share/docassemble/cron/crontab \
+   /tmp/docassemble/docassemble_webapp"
+
+USER root
+RUN bash -c \
+"mv /etc/crontab /usr/share/docassemble/cron/crontab \
 && ln -s /usr/share/docassemble/cron/crontab /etc/crontab \
 && mv /etc/cron.daily/apache2 /usr/share/docassemble/cron/apache2 \
 && ln -s /usr/share/docassemble/cron/apache2 /etc/cron.daily/apache2 \
