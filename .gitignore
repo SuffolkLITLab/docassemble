@@ -72,3 +72,4 @@ CLAUDE.md
 .claude/
 .claudeignore
 __pycache__
+.jj

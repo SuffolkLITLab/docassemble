@@ -1,7 +1,7 @@
 FROM jhpyle/docassemble-os
 USER root
 
-COPY . /tmp/docassemble/
+COPY ./Docker/nginx.conf /tmp/docassemble/Docker/nginx.conf
 
 # Update nginx to latest stable over the default in Ubuntu 24.04
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
@@ -15,6 +15,8 @@ bash -c \
 && apt-get -q -y install nginx \
 && cp /tmp/docassemble/Docker/nginx.conf /etc/nginx/ \
 && rm /etc/nginx/conf.d/default.conf"
+
+COPY --chown=www-data . /tmp/docassemble/
 
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
 bash -c \
@@ -58,14 +60,20 @@ bash -c \
 && chmod ogu+rx /usr/bin/daunoconv \
 && update-exim4.conf \
 && chown -R www-data:www-data \
+   /usr/share/docassemble/local3.12 \
    /usr/share/docassemble/log \
    /usr/share/docassemble/files \
 && chmod ogu+r /usr/share/docassemble/config/config.yml.dist \
 && chmod 755 /etc/ssl/docassemble \
+&& chown -R www-data:www-data \
+   /usr/share/docassemble/config \
 && cd /tmp \
 && /usr/bin/pip3 install --break-system-packages unoconv \
-&& cp /usr/local/bin/unoconv /usr/bin/unoconv \
-&& python3 -m venv --copies /usr/share/docassemble/local3.12 \
+&& cp /usr/local/bin/unoconv /usr/bin/unoconv"
+
+USER www-data
+RUN bash -c \
+"python3 -m venv --copies /usr/share/docassemble/local3.12 \
 && source /usr/share/docassemble/local3.12/bin/activate \
 && pip install --upgrade pip==26.0.1 \
 && pip install --upgrade mod_wsgi==5.0.2 \
@@ -78,8 +86,11 @@ bash -c \
 && pip install \
    /tmp/docassemble/docassemble_base \
    /tmp/docassemble/docassemble_demo \
-   /tmp/docassemble/docassemble_webapp \
-&& mv /etc/crontab /usr/share/docassemble/cron/crontab \
+   /tmp/docassemble/docassemble_webapp"
+
+USER root
+RUN bash -c \
+"mv /etc/crontab /usr/share/docassemble/cron/crontab \
 && ln -s /usr/share/docassemble/cron/crontab /etc/crontab \
 && mv /etc/cron.daily/apache2 /usr/share/docassemble/cron/apache2 \
 && ln -s /usr/share/docassemble/cron/apache2 /etc/cron.daily/apache2 \
