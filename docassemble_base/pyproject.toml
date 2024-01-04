@@ -99,6 +99,7 @@ dependencies = [
   "jaraco.classes==3.4.0",
   "jaraco.context==6.0.2",
   "jaraco.functools==4.4.0",
+  "javascripthon==0.12",
   "jdcal==1.4.1",
   "jeepney==0.9.0",
   "jellyfish==1.2.1",
