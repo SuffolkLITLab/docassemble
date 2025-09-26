@@ -9,6 +9,7 @@ server {
     ssl_ciphers {{DASSLCIPHERS}};
     gzip on;
     gzip_types text/plain application/xml text/css text/javascript application/javascript image/vnd.microsoft.icon;
+    uwsgi_read_timeout 300s;
     {{DAREALIP}}
     {{DALOCATIONREWRITE}}
     location {{DAWSGIROOT}} { try_files $uri @docassemble; }
