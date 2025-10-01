@@ -6,7 +6,8 @@ export DA_DEFAULT_LOCAL="local3.12"
 
 export DA_ACTIVATE="${DA_PYTHON:-${DA_ROOT}/${DA_DEFAULT_LOCAL}}/bin/activate"
 
-echo "initialize: Activating Python with ${DA_ACTIVATE}" >&2
+echo "initialize: Activating Python with ${DA_ACTIVATE}" `date +"%T.%N"` >&2
+echo "Current time: " `date +"%T.%N"` >&2
 
 source "${DA_ACTIVATE}"
 
@@ -34,6 +35,7 @@ mkdir -p /var/run/docassemble
 rm -f /var/run/docassemble/status-*
 touch /var/run/docassemble/da_running
 
+echo "Apt update: Current time: " `date +"%T.%N"` >&2
 export DEBIAN_FRONTEND=noninteractive
 if [ "${DAALLOWUPDATES:-true}" == "true" ]; then
     echo "initialize: Running apt-get clean" >&2
@@ -41,6 +43,7 @@ if [ "${DAALLOWUPDATES:-true}" == "true" ]; then
     echo "initialize: Running apt-get update" >&2
     apt-get -q -y update &> /dev/null
 fi
+echo "Apt update done: Current time: " `date +"%T.%N"` >&2
 
 if [[ '$(dpkg --print-architecture)' == 'amd64' ]]; then
     CURRENTARCH=x86_64
@@ -48,6 +51,7 @@ else
     CURRENTARCH=aarch64
 fi
 
+echo "Is everything running? Current time: " `date +"%T.%N"` >&2
 echo "initialize: Determining if web browser already running" >&2
 
 if [ -f /var/run/apache2/apache2.pid ]; then
@@ -95,6 +99,7 @@ if [ -f /var/run/crond.pid ]; then
 else
     CRONRUNNING=false
 fi
+echo "Everything running done: Current time: " `date +"%T.%N"` >&2
 
 echo "initialize: Determining hostname" >&2
 
@@ -224,6 +229,8 @@ else
     export LOCAL_HOSTNAME=`hostname --fqdn`
     export PUBLIC_HOSTNAME="${LOCAL_HOSTNAME}"
 fi
+
+echo "Restoring from backup: Current time: " `date +"%T.%N"` >&2
 
 if [ "${RESTOREFROMBACKUP}" == "true" ]; then
     echo "initialize: Restoring from backup" >&2
@@ -427,11 +434,13 @@ if [ "${RESTOREFROMBACKUP}" == "true" ]; then
         fi
     fi
 fi
+echo "Restoring from backup done: Current time: " `date +"%T.%N"` >&2
 
 if [ "${BEHINDHTTPSLOADBALANCER:-null}" == "true" ] && [ "${XSENDFILE:-null}" == "null" ]; then
     export XSENDFILE=false
 fi
 
+echo "Create config: Current time: " `date +"%T.%N"` >&2
 if [ ! -f "$DA_CONFIG_FILE" ]; then
     if [ "${DADEFAULTSECRET:-null}" = "null" ]; then
         DADEFAULTSECRET=$(python -m docassemble.base.generate_key)
@@ -515,6 +524,7 @@ if [ "${DAROOTOWNED:-false}" == "false" ] && [ "${DAREADONLYFILESYSTEM:-false}" 
     chown www-data:www-data "$DA_CONFIG_FILE"
     chsh -s /bin/bash www-data
 fi
+echo "Create config done: Current time: " `date +"%T.%N"` >&2
 
 echo "initialize: Defining environment variables from Configuration" >&2
 
@@ -539,6 +549,7 @@ else
     export SUPERVISORCMD="supervisorctl --serverurl http://localhost:9001"
 fi
 
+echo "First time server init: Current time: " `date +"%T.%N"` >&2
 if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
     if [ ! -f /etc/hasbeeninitialized ]; then
         echo "initialize: This is the first time the server was initialized" >&2
@@ -563,12 +574,14 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
             fi
         else
             echo "initialize: No root ownership; changing file ownership to www-data (this takes a long time)" >&2
+            echo "Current time: " `date +"%T.%N"` >&2
             chsh -s /bin/bash www-data
             chown -R www-data:www-data /usr/share/docassemble/local3.12
             chown -R www-data:www-data /usr/share/docassemble/config \
                   /usr/share/docassemble/webapp/docassemble.wsgi
         fi
 	echo "initialize: considering whether to install extra fonts" >&2
+    echo "Current time: " `date +"%T.%N"` >&2
 	if [ "${DAEXTRAFONTS:-false}" == "true" ]; then
 	    echo "initialize: installing extra fonts" >&2
 	    apt-get -q -y install \
@@ -677,8 +690,10 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
 	    else
 		echo "initialize: error while installing extra fonts." >&2
 	    fi
+        echo "Current time: " `date +"%T.%N"` >&2
 	fi
 	echo "initialize: considering whether to install google fonts" >&2
+    echo "Current time: " `date +"%T.%N"` >&2
 	if [ "${DAGOOGLEFONTS:-false}" == "true" ]; then
 	    echo "initialize: installing google fonts" >&2
 	    { cd /tmp \
@@ -694,12 +709,14 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
 	    else
 		echo "initialize: error while installing google fonts." >&2
 	    fi
+        echo "Current time: " `date +"%T.%N"` >&2
 	fi
         touch /etc/hasbeeninitialized
     else
         echo "initialize: This is not the first time the server was initialized" >&2
     fi
 fi
+echo "First time server init done: Current time: " `date +"%T.%N"` >&2
 
 echo "initialize: Running start hook" >&2
 
@@ -1257,6 +1274,8 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
     fi
 fi
 
+
+echo "Considering upgrading of packages: Current time: " `date +"%T.%N"` >&2
 if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
     if [ "${DAUPDATEONSTART:-true}" == "true" ] && [ "${DAALLOWUPDATES:-true}" == "true" ]; then
         echo "initialize: Doing upgrading of packages" >&2
@@ -1270,6 +1289,7 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
         touch "${DA_ROOT}/webapp/initialized"
     fi
 fi
+echo "Done upgrading of packages: Current time: " `date +"%T.%N"` >&2
 
 if [[ $CONTAINERROLE =~ .*:(all|rabbitmq):.* ]]; then
     echo "initialize: Testing if RabbitMQ is running" >&2
