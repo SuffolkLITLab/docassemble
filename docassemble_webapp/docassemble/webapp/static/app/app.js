@@ -50,10 +50,10 @@ document.addEventListener("DOMContentLoaded", function () {
   for (var i = 0; i < daCustomItems.length; i++) {
     try {
       daGlobalEval(daCustomItems[i].js);
-    } catch {
-      console.log(
+    } catch (e) {
+      console.error(
         "Error with JavaScript code of CustomDataType " +
-          daCustomItems[i].datatype,
+          daCustomItems[i].datatype, e.stack
       );
     }
   }
