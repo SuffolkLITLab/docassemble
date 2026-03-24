@@ -248,6 +248,9 @@
     select: function () {
       //console.log("select");
       var val = this.$menu.find(".active").attr("data-value");
+      if (val === undefined) {
+        return;
+      }
       var oldVal;
       var triggerElement = false;
       var triggerTarget = false;
@@ -415,7 +418,7 @@
       return item.replace(
         new RegExp("(" + query + ")", "ig"),
         function ($1, match) {
-          return "<b>" + match + "</b>";
+          return "<mark>" + match + "</mark>";
         },
       );
     },
@@ -433,7 +436,7 @@
         return i[0];
       });
 
-      this.setActive(items.first());
+      //this.setActive(items.first());
       this.$menu.html(items);
       return this;
     },
@@ -557,6 +560,7 @@
         .on("focus", $.proxy(this.focus, this))
         .on("change", $.proxy(this.change, this))
         .on("blur", $.proxy(this.blur, this))
+        .on("click", $.proxy(this.click, this))
         .on("keypress", $.proxy(this.keypress, this))
         .on("keyup", $.proxy(this.keyup, this));
 
@@ -668,7 +672,6 @@
         case 18: // alt
           break;
 
-        case 9: // tab
         case 13: // enter
           if (e) {
             e.stopPropagation();
@@ -680,7 +683,35 @@
             return;
           }
           if (!this.selected) {
-            this.select();
+            //this.select();
+            this.blur();
+          } else {
+            var val = this.$element.val();
+            var opts = this.$menu.find("li");
+            var n = opts.length;
+            for (var i = 0; i < n; ++i) {
+              if ($(opts[i]).attr("data-value") == val) {
+                e.stopPropagation();
+                e.preventDefault();
+                $(opts[i]).click();
+                return false;
+              }
+            }
+          }
+          break;
+
+        case 9: //tab
+          if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+          }
+          daFetchAjaxTimeoutFetchAfter = false;
+          daFetchAcceptIncoming = false;
+          if (!this.shown) {
+            return;
+          }
+          if (!this.selected) {
+            this.blur();
           } else {
             var val = this.$element.val();
             var opts = this.$menu.find("li");
@@ -796,6 +827,7 @@
       daFetchAjaxTimeoutFetchAfter = false;
       daFetchAcceptIncoming = false;
       this.select();
+      this.lookup();
       this.$element.focus();
     },
 
