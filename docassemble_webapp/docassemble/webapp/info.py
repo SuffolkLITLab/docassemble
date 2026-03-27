@@ -290,7 +290,6 @@ system_packages = [
     "sortedcontainers",
     "soupsieve",
     "SQLAlchemy",
-    "starkbank-ecdsa",
     "tailer",
     "threadpoolctl",
     "tinycss2",
