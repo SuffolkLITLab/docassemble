@@ -6,9 +6,6 @@ on:
       - master
     tags:
       - 'v*'            # push to registry only on version tags
-  pull_request:
-    branches:
-      - master
   workflow_dispatch:       # allows manual trigger from Action tab
 
 jobs:
