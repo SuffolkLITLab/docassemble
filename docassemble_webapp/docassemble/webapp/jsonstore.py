@@ -4,6 +4,7 @@ from docassemble.base.functions import server
 from docassemble.webapp.core.models import JsonStorage as CoreJsonStorage
 import docassemble.webapp.db_object
 from sqlalchemy import Column, Boolean, Integer, String, Text, DateTime, func, create_engine, false, delete, select
+from sqlalchemy.schema import FetchedValue
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.dialects.postgresql.json import JSONB
@@ -26,7 +27,7 @@ else:
 
     class JsonStorage(Base):
         __tablename__ = "jsonstorage"
-        id = Column(Integer(), primary_key=True)
+        id = Column(Integer(), primary_key=True, server_default=FetchedValue())
         filename = Column(String(255), index=True)
         key = Column(String(250), index=True)
         if url.startswith('postgresql'):
@@ -65,23 +66,33 @@ def read_answer_json(user_code, filename, tags=None, all_tags=False):
 
 
 def write_answer_json(user_code, filename, data, tags=None, persistent=False):
-    existing_entry = JsonDb.execute(select(JsonStorage).filter_by(filename=filename, key=user_code, tags=tags).with_for_update()).scalar()
-    if existing_entry:
-        existing_entry.data = data
-        existing_entry.modtime = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
-        existing_entry.persistent = persistent
-    else:
-        new_entry = JsonStorage(filename=filename, key=user_code, data=data, tags=tags, persistent=persistent, modtime=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
-        JsonDb.add(new_entry)
-    JsonDb.commit()
+    try:
+        existing_entry = JsonDb.execute(select(JsonStorage).filter_by(filename=filename, key=user_code, tags=tags).with_for_update()).scalar()
+        if existing_entry:
+            existing_entry.data = data
+            existing_entry.modtime = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+            existing_entry.persistent = persistent
+        else:
+            new_entry = JsonStorage(filename=filename, key=user_code, data=data, tags=tags, persistent=persistent, modtime=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
+            JsonDb.add(new_entry)
+    except:
+        JsonDb.rollback()
+        raise
+    finally:
+        JsonDb.commit()
 
 
 def delete_answer_json(user_code, filename, tags=None, delete_all=False, delete_persistent=False):
-    if delete_all:
-        if delete_persistent:
-            JsonDb.execute(delete(JsonStorage).filter_by(filename=filename, key=user_code))
+    try:
+        if delete_all:
+            if delete_persistent:
+                JsonDb.execute(delete(JsonStorage).filter_by(filename=filename, key=user_code))
+            else:
+                JsonDb.execute(delete(JsonStorage).filter_by(filename=filename, key=user_code, persistent=False))
         else:
-            JsonDb.execute(delete(JsonStorage).filter_by(filename=filename, key=user_code, persistent=False))
-    else:
-        JsonDb.execute(delete(JsonStorage).filter_by(filename=filename, key=user_code, tags=tags))
-    JsonDb.commit()
+            JsonDb.execute(delete(JsonStorage).filter_by(filename=filename, key=user_code, tags=tags))
+    except:
+        JsonDb.rollback()
+        raise
+    finally:
+        JsonDb.commit()
