@@ -1,3 +1,4 @@
+from sqlalchemy.schema import Index
 from docassemble.webapp.db_object import db, UserMixin
 from docassemble.base.config import dbtableprefix, allowed
 from flask_login import AnonymousUserMixin
@@ -133,7 +134,7 @@ class UserDict(db.Model):
     encrypted = db.Column(db.Boolean(), nullable=False, server_default='1')
     modtime = db.Column(db.DateTime())
 
-db.Index(dbtableprefix + 'ix_userdict_key_filename', UserDict.key, UserDict.filename)
+Index(dbtableprefix + 'ix_userdict_key_filename', UserDict.key, UserDict.filename)
 
 
 class UserDictKeys(db.Model):
@@ -144,7 +145,7 @@ class UserDictKeys(db.Model):
     user_id = db.Column(db.Integer(), db.ForeignKey(dbtableprefix + 'user.id', ondelete='CASCADE'), index=True)
     temp_user_id = db.Column(db.Integer(), db.ForeignKey(dbtableprefix + 'tempuser.id', ondelete='CASCADE'), index=True)
 
-db.Index(dbtableprefix + 'ix_userdictkeys_key_filename', UserDictKeys.key, UserDictKeys.filename)
+Index(dbtableprefix + 'ix_userdictkeys_key_filename', UserDictKeys.key, UserDictKeys.filename)
 
 
 class TempUser(db.Model):
