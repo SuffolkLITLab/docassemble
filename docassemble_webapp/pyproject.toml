@@ -3,7 +3,7 @@ requires = ["setuptools==82.0.1"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "suffolklitlab-docassemble.webapp"
-version = '1.9.7'
+version = '1.9.7.post1'
 description = "Suffolk LIT Lab's fork of the web application components of the docassemble system."
 readme = "README.md"
 authors = [
@@ -14,8 +14,8 @@ license = "MIT"
 license-files = ["LICENSE.txt"]
 requires-python = ">= 3.9"
 dependencies = [
-  'suffolklitlab-docassemble.base==1.9.7',
-  'suffolklitlab-docassemble.demo==1.9.7',
+  'suffolklitlab-docassemble.base==1.9.7.post1',
+  'suffolklitlab-docassemble.demo==1.9.7.post1',
   "aiohappyeyeballs==2.6.1",
   "aiohttp==3.13.5",
   "aiohttp-retry==2.9.1",
