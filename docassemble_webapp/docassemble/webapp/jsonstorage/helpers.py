@@ -1,5 +1,6 @@
 import datetime
 from sqlalchemy import false, delete, select, func
+from sqlalchemy.schema import FetchedValue
 from sqlalchemy.dialects.postgresql.json import JSONB
 from docassemble.webapp.config import daconfig
 from docassemble.webapp.extensions import db
@@ -25,7 +26,7 @@ else:
     class JsonStorage(db.Model):
         __tablename__ = "jsonstorage"
         __bind_key__ = 'variables_snapshot'
-        id = db.Column(db.Integer(), primary_key=True)
+        id = db.Column(db.Integer(), primary_key=True, server_default=FetchedValue())
         filename = db.Column(db.String(255), index=True)
         key = db.Column(db.String(250), index=True)
         if _snapshot_url.startswith('postgresql'):
