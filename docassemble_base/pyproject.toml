@@ -2,8 +2,8 @@
 requires = ["setuptools==82.0.1"]
 build-backend = "setuptools.build_meta"
 [project]
-version = '1.10.5'
 name = "suffolklitlab-docassemble.base"
+version = '1.10.5.post1'
 description = "Suffolk LIT Lab's fork of the base components of the docassemble system."
 readme = "README.md"
 authors = [
