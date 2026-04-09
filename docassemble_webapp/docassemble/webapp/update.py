@@ -354,6 +354,9 @@ def check_for_updates(start_time=None, invalidate_cache=True, full=True):
     logmessage("check_for_updates: 10 after " + str(time.time() - start_time) + " seconds")
     did_something = False
     for package in to_install:
+        if package.name in ['docassemble.base', 'docassemble.webapp', 'docassemble.demo']:
+            logmessage("check_for_updates: skipping installation of " + package.name + ", preferring Suffolk fork after " + str(time.time() - start_time) + " seconds")
+            continue
         did_something = True
         logmessage("check_for_updates: going to install a package: " + package.name + " after " + str(time.time() - start_time) + " seconds")
         # if doing_startup and package.name.startswith('docassemble') and package.name in here_already:
