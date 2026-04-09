@@ -3,7 +3,7 @@ import os
 __all__ = ['system_packages']
 
 system_packages = [
-    "docassemble.base",
+    "suffolklitlab-docassemble.base",
     "docassemble.libreoffice",
     "docassemble.pandoc",
     "docassemble.tesseract",

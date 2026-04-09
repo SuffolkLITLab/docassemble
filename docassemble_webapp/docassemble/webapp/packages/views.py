@@ -99,7 +99,7 @@ def update_package():
                         else:
                             install_git_package(target, existing_package.giturl, get_master_branch(existing_package.giturl))
                     elif existing_package.type == 'pip':
-                        if existing_package.name == 'docassemble.webapp' and existing_package.limitation and not limitation:
+                        if existing_package.name == 'suffolklitlab-docassemble.webapp' and existing_package.limitation and not limitation:
                             existing_package.limitation = None
                             db.session.commit()
                         install_pip_package(existing_package.name, existing_package.limitation)
@@ -194,7 +194,7 @@ def update_package():
     {redis_script(initial_values)}"""
     python_version = daconfig.get('python version', word('Unknown'))
     version = word("Current") + ': <span class="badge bg-primary">' + str(python_version) + '</span>'
-    dw_status = pypi_status('docassemble.webapp')
+    dw_status = pypi_status('suffolklitlab-docassemble.webapp')
     if daconfig.get('stable version', False):
         if not dw_status['error'] and 'info' in dw_status and 'releases' in dw_status['info'] and isinstance(dw_status['info']['releases'], dict):
             stable_version = packaging.version.parse('1.1')
@@ -210,7 +210,7 @@ def update_package():
     else:
         if not dw_status['error'] and 'info' in dw_status and 'info' in dw_status['info'] and 'version' in dw_status['info']['info'] and dw_status['info']['info']['version'] != str(python_version):
             version += ' ' + word("Available") + ': <span class="badge bg-success">' + dw_status['info']['info']['version'] + '</span>'
-    allowed_to_upgrade = current_user.has_role('admin') or user_can_edit_package(pkgname='docassemble.webapp')
+    allowed_to_upgrade = current_user.has_role('admin') or user_can_edit_package(pkgname='suffolklitlab-docassemble.webapp')
     if daconfig.get('stable version', False):
         limitation = '<1.1'
     else:
@@ -219,8 +219,8 @@ def update_package():
         limitation = '<1.1.0'
     else:
         limitation = ''
-    allowed_to_upgrade = current_user.has_role('admin') or user_can_edit_package(pkgname='docassemble.webapp')
-    response = make_response(render_template('packages/update_package.html', version_warning=version_warning, bodyclass='daadminbody', form=form, package_list=sorted(package_list, key=lambda y: (0 if y.package.name == 'docassemble' or y.package.name.startswith('docassemble.') else 1, y.package.name.lower())), tab_title=word('Package Management'), page_title=word('Package Management'), extra_js=Markup(extra_js), version=Markup(version), allowed_to_upgrade=allowed_to_upgrade, limitation=limitation), 200)
+    allowed_to_upgrade = current_user.has_role('admin') or user_can_edit_package(pkgname='suffolklitlab-docassemble.webapp')
+    response = make_response(render_template('packages/update_package.html', version_warning=version_warning, bodyclass='daadminbody', form=form, package_list=sorted(package_list, key=lambda y: (0 if y.package.name == 'docassemble' or y.package.name.startswith('docassemble.') or y.package.name.startswith('suffolklitlab-docassemble.') else 1, y.package.name.lower())), tab_title=word('Package Management'), page_title=word('Package Management'), extra_js=Markup(extra_js), version=Markup(version), allowed_to_upgrade=allowed_to_upgrade, limitation=limitation), 200)
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     return response
 

@@ -559,7 +559,7 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
             if [ "${DAALLOWUPDATES:-true}" == "true" ] \
                    || [ "${DAENABLEPLAYGROUND:-true}" == "true" ]; then
                 # chown -R www-data:www-data /usr/share/docassemble/local3.14
-                echo "www-data already owns local3.14" # chown -R www-data:www-data /usr/share/docassemble/local3.12
+                echo "www-data already owns local3.14" # chown -R www-data:www-data /usr/share/docassemble/local3.14
             else
                 echo "initialize: Python virtual environment is read-only" >&2
             fi
@@ -580,7 +580,7 @@ if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
             chsh -s /bin/bash www-data
             echo "changed shell: " `date +"%T.%N"` >&2
             #chown -R www-data:www-data /usr/share/docassemble/local3.14
-            echo "chown local3.12: " `date +"%T.%N"` >&2
+            echo "chown local3.14: " `date +"%T.%N"` >&2
             #chown -R www-data:www-data /usr/share/docassemble/config \
             echo "chown config: " `date +"%T.%N"` >&2
             chown -R www-data:www-data /usr/share/docassemble/webapp/docassemble.wsgi

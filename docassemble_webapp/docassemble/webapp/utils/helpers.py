@@ -1426,7 +1426,7 @@ def user_can_edit_package(pkgname=None, giturl=None):
     if current_user.has_role('admin'):
         return True
     if not PACKAGE_PROTECTION:
-        if pkgname in ('docassemble.base', 'docassemble.demo', 'docassemble.webapp'):
+        if pkgname in ('suffolklitlab-docassemble.base', 'suffolklitlab-docassemble.demo', 'suffolklitlab-docassemble.webapp'):
             return False
         return True
     if pkgname is not None:
@@ -1590,7 +1590,7 @@ def get_package_info():
             if package.name in system_packages:
                 can_uninstall = False
                 can_update = False
-            if package.name == 'docassemble.webapp':
+            if package.name == 'suffolklitlab-docassemble.webapp':
                 can_uninstall = False
                 can_update = is_admin
             package_list.append(Object(package=package, can_update=can_update, can_uninstall=can_uninstall))
@@ -1775,7 +1775,7 @@ def source_code_url(the_name, datatype=None):
     source_file = re.sub(r'.*/site-packages/', '', source_file)
     m = re.search(r'^docassemble/(base|webapp|demo)/', source_file)
     if m:
-        output = 'https://github.com/jhpyle/docassemble/blob/master/docassemble_' + m.group(1) + '/' + source_file
+        output = 'https://github.com/SuffolkLITLab/docassemble/blob/master/docassemble_' + m.group(1) + '/' + source_file
         if line_number == 1:
             return output
         return output + '#L' + str(line_number)
