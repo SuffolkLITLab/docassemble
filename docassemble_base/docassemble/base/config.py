@@ -452,7 +452,7 @@ def load(**kwargs):
     daconfig['config file'] = filename
     if 'modules' not in daconfig:
         daconfig['modules'] = os.getenv('DA_PYTHON', '/usr/share/docassemble/local' + str(sys.version_info.major) + '.' + str(sys.version_info.minor))
-    daconfig['python version'] = importlib.metadata.version("docassemble.base")
+    daconfig['python version'] = importlib.metadata.version("suffolklitlab-docassemble.base")
     version_file = daconfig.get('version file', '/usr/share/docassemble/webapp/VERSION')
     if os.path.isfile(version_file) and os.access(version_file, os.R_OK):
         with open(version_file, 'r', encoding='utf-8') as fp:

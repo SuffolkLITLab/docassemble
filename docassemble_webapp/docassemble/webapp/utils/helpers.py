@@ -1437,7 +1437,7 @@ def user_can_edit_package(pkgname=None, giturl=None):
     if current_user.has_role('admin'):
         return True
     if not PACKAGE_PROTECTION:
-        if pkgname in ('docassemble.base', 'docassemble.demo', 'docassemble.webapp'):
+        if pkgname in ('suffolklitlab-docassemble.base', 'suffolklitlab-docassemble.demo', 'suffolklitlab-docassemble.webapp'):
             return False
         return True
     if pkgname is not None:
@@ -1601,7 +1601,7 @@ def get_package_info():
             if package.name in system_packages:
                 can_uninstall = False
                 can_update = False
-            if package.name == 'docassemble.webapp':
+            if package.name == 'suffolklitlab-docassemble.webapp':
                 can_uninstall = False
                 can_update = is_admin
             package_list.append(Object(package=package, can_update=can_update, can_uninstall=can_uninstall))
@@ -3491,7 +3491,7 @@ def jsonify_restart_task():
 
 
 def should_run_create(package_name):
-    if package_name in ('docassemble.base', 'docassemble.webapp', 'docassemble.demo', 'docassemble'):
+    if package_name in ('suffolklitlab-docassemble.base', 'suffolklitlab-docassemble.webapp', 'suffolklitlab-docassemble.demo', 'suffolklitlab-docassemble'):
         return True
     return False
 

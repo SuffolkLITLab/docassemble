@@ -1,0 +1,106 @@
+name: Publish Python distribution to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install build tool
+        run: python3 -m pip install --user build
+
+      - name: Build docassemble_base
+        run: cd docassemble_base && python3 -m build
+      - name: Store distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-distribution-base
+          path: docassemble_base/dist/
+
+      - name: Build docassemble_demo
+        run: cd docassemble_demo && python3 -m build
+      - name: Store distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-distribution-demo
+          path: docassemble_demo/dist/
+
+      - name: Build docassemble_webapp
+        run: cd docassemble_webapp && python3 -m build
+      - name: Store distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-distribution-webapp
+          path: docassemble_webapp/dist/
+
+  publish-to-pypi-base:
+    name: Publish base distribution to PyPI
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi-base
+      url: https://pypi.org/p/suffolklitlab-docassemble.base
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: package-distribution-base
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-to-pypi-demo:
+    name: Publish demo distribution to PyPI
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi-demo
+      url: https://pypi.org/p/suffolklitlab-docassemble.demo
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: package-distribution-demo
+          path: dist/
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-to-pypi-webapp:
+    name: Publish webapp distribution to PyPI
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi-webapp
+      url: https://pypi.org/p/suffolklitlab-docassemble.webapp
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: package-distribution-webapp
+          path: dist/
+      - name: Publish webapp distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

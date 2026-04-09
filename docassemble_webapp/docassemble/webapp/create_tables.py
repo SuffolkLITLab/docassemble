@@ -228,7 +228,7 @@ def populate_tables(start_time=None):
         logmessage("create_tables.populate_tables: add_dependencies finished after " + str(time.time() - start_time) + " seconds.")
         git_packages = session.execute(select(Package).filter_by(type='git')).scalars().all()
         for package in git_packages:
-            if package.name in ['docassemble', 'docassemble.base', 'docassemble.webapp', 'docassemble.demo']:
+            if package.name in ['suffolklitlab-docassemble', 'suffolklitlab-docassemble.base', 'suffolklitlab-docassemble.webapp', 'suffolklitlab-docassemble.demo']:
                 if package.giturl:
                     package.giturl = None
                 if package.gitsubdir:
