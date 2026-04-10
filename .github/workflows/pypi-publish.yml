@@ -52,7 +52,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     environment:
-      name: pypi
+      name: pypi-base
       url: https://pypi.org/p/suffolklitlab-docassemble.base
     permissions:
       id-token: write
@@ -72,7 +72,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     environment:
-      name: pypi
+      name: pypi-demo
       url: https://pypi.org/p/suffolklitlab-docassemble.demo
     permissions:
       id-token: write
@@ -92,7 +92,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     environment:
-      name: pypi
+      name: pypi-webapp
       url: https://pypi.org/p/suffolklitlab-docassemble.webapp
     permissions:
       id-token: write
