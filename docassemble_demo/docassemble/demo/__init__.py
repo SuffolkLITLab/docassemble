@@ -1,2 +1,2 @@
 # do not pre-load
-__version__ = "1.9.7.post1"
+__version__ = "1.9.7.post2"
