@@ -10774,7 +10774,7 @@ def update_package():
     else:
         limitation = ''
     allowed_to_upgrade = current_user.has_role('admin') or user_can_edit_package(pkgname='suffolklitlab-docassemble.webapp')
-    response = make_response(render_template('pages/update_package.html', version_warning=version_warning, bodyclass='daadminbody', form=form, package_list=sorted(package_list, key=lambda y: (0 if y.package.name == 'docassemble' or y.package.name.startswith('docassemble.') else 1, y.package.name.lower())), tab_title=word('Package Management'), page_title=word('Package Management'), extra_js=Markup(extra_js), version=Markup(version), allowed_to_upgrade=allowed_to_upgrade, limitation=limitation), 200)
+    response = make_response(render_template('pages/update_package.html', version_warning=version_warning, bodyclass='daadminbody', form=form, package_list=sorted(package_list, key=lambda y: (0 if y.package.name == 'docassemble' or y.package.name.startswith('docassemble.') or y.package.name.startswith('suffolklitlab-docassemble.') else 1, y.package.name.lower())), tab_title=word('Package Management'), page_title=word('Package Management'), extra_js=Markup(extra_js), version=Markup(version), allowed_to_upgrade=allowed_to_upgrade, limitation=limitation), 200)
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
     return response
 
