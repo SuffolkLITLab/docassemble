@@ -2,6 +2,7 @@ import copy
 import os
 # import sys
 import json
+import logging.config
 import sqlalchemy
 from docassemble.base.logger import logmessage
 import docassemble.base.functions
@@ -11,7 +12,9 @@ from docassemble.base.error import DAAttributeError, DAException
 from alembic.config import Config
 from alembic import command
 
-__all__ = ['SQLObject', 'SQLObjectRelationship', 'SQLObjectList', 'SQLRelationshipList', 'StandardRelationshipList', 'alchemy_url', 'connect_args', 'upgrade_db']
+__all__ = ['SQLObject', 'SQLObjectRelationship', 'SQLObjectList', 'SQLRelationshipList', 'StandardRelationshipList', 'alchemy_url', 'connect_args', 'upgrade_db', 'register_db', 'create_objects']
+
+upgrades_done = set()
 
 
 class SQLObject:
@@ -36,7 +39,7 @@ class SQLObject:
             self._nascent = False
             db_values = {}
             for column in self._model.__dict__.keys():
-                if column == 'id' or column.startswith('_'):
+                if column == 'id' or column.startswith('_') or column == 'metadata':
                     continue
                 db_values[column] = getattr(db_entry, column)
                 if db_values[column] is not None:
@@ -89,7 +92,7 @@ class SQLObject:
                 obj.id = db_entry.id
                 db_values = {}
                 for column in cls._model.__dict__.keys():
-                    if column == 'id' or column.startswith('_'):
+                    if column == 'id' or column.startswith('_') or column == 'metadata':
                         continue
                     db_values[column] = getattr(db_entry, column)
                     if db_values[column] is not None:
@@ -123,7 +126,7 @@ class SQLObject:
                 obj.id = db_entry.id
                 db_values = {}
                 for column in cls._model.__dict__.keys():
-                    if column == 'id' or column.startswith('_'):
+                    if column == 'id' or column.startswith('_') or column == 'metadata':
                         continue
                     db_values[column] = getattr(db_entry, column)
                     if db_values[column] is not None:
@@ -236,7 +239,7 @@ class SQLObject:
         db_values = {}
         required_ok = True
         for column in self._model.__dict__.keys():
-            if column == 'id' or column.startswith('_'):
+            if column == 'id' or column.startswith('_') or column == 'metadata':
                 continue
             try:
                 db_values[column] = self.db_get(column)  # pylint: disable=assignment-from-no-return
@@ -327,7 +330,7 @@ class SQLObject:
             self._nascent = False
         db_values = {}
         for column in self._model.__dict__.keys():
-            if column == 'id' or column.startswith('_'):
+            if column == 'id' or column.startswith('_') or column == 'metadata':
                 continue
             db_values[column] = getattr(db_entry, column)
             if db_values[column] is not None:
@@ -490,9 +493,27 @@ def upgrade_db(url, py_file, engine, version_table=None, name=None, conn_args=No
     alembic_cfg.set_main_option("sqlalchemy.url", url)
     alembic_cfg.set_main_option("connect_args", json.dumps(conn_args))
     alembic_cfg.set_main_option("script_location", alembic_path)
-    if not sqlalchemy.inspect(engine).has_table(version_table):
-        command.stamp(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    _real_fileConfig = logging.config.fileConfig
+    logging.config.fileConfig = lambda *a, **kw: None
+    try:
+        if not sqlalchemy.inspect(engine).has_table(version_table):
+            command.stamp(alembic_cfg, "head")
+        command.upgrade(alembic_cfg, "head")
+    finally:
+        logging.config.fileConfig = _real_fileConfig
+
+
+def register_db(db_name):
+    db = server.register_db(db_name)
+    return db
+
+
+def create_objects(filename, db_name):
+    url, conn_args, engine = server.create_objects_in_db(db_name)
+    if db_name in upgrades_done:
+        return
+    upgrade_db(url, filename, engine, version_table='auto', conn_args=conn_args)
+    upgrades_done.add(db_name)
 
 
 class SQLObjectRelationship(SQLObject):

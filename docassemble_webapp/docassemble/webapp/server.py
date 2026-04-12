@@ -107,7 +107,7 @@ from docassemble_flask_user import UserManager, SQLAlchemyAdapter
 from docassemble_flask_user import login_required, roles_required, user_logged_in, user_changed_password, user_registered
 from docassemblekvsession import KVSessionExtension
 from docassemble_textstat.textstat import textstat
-from flask import make_response, abort, render_template, render_template_string, request, session, send_file, redirect, current_app, get_flashed_messages, flash, jsonify, Response, g
+from flask import make_response, abort, render_template, render_template_string, request, session, send_file, redirect, current_app, get_flashed_messages, flash, jsonify, Response, g, has_request_context
 from markupsafe import Markup
 from flask_cors import cross_origin
 from flask_login import LoginManager
@@ -137,7 +137,7 @@ from google.auth.transport import requests as google_requests
 import requests
 import ruamel.yaml
 from simplekv.memory.redisstore import RedisStore
-from sqlalchemy import or_, and_, not_, select, delete as sqldelete, update
+from sqlalchemy import or_, and_, not_, select, delete as sqldelete, update, create_engine
 import tailer
 import twilio.twiml
 import twilio.twiml.messaging_response
@@ -150,6 +150,7 @@ import wtforms
 import xlsxwriter
 from user_agents import parse as ua_parse
 import yaml as standardyaml
+import docassemble.webapp.user_database  # pylint: disable=ungrouped-imports
 
 if DEBUG_BOOT:
     boot_log("server: done importing modules")
@@ -1358,13 +1359,14 @@ sys_logger = None
 
 def syslog_message(message):
     message = re.sub(r'\n', ' ', message)
-    if current_user and current_user.is_authenticated:
-        the_user = current_user.email
-    else:
-        the_user = "anonymous"
-    if request_active:
+    if has_request_context():
         try:
-            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': get_requester_ip(request), 'yamlfile': docassemble.base.functions.this_thread.current_info.get('yaml_filename', 'na'), 'user': the_user, 'session': docassemble.base.functions.this_thread.current_info.get('session', 'na')})
+            if current_user and current_user.is_authenticated:
+                the_user = current_user.email
+            else:
+                the_user = "anonymous"
+            the_current_info = getattr(docassemble.base.functions.this_thread, 'current_info', {})
+            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': get_requester_ip(request), 'yamlfile': the_current_info.get('yaml_filename', 'na'), 'user': the_user, 'session': the_current_info.get('session', 'na')})
         except BaseException as err:
             sys.stderr.write("Error writing log message " + str(message) + "\n")
             try:
@@ -1388,12 +1390,18 @@ def syslog_message_with_timestamp(message):
 LOGFORMAT = daconfig.get('log format', 'docassemble: ip=%(clientip)s i=%(yamlfile)s uid=%(session)s user=%(user)s %(message)s')
 
 
+class UnsilenceableLogger(logging.Logger):
+    def isEnabledFor(self, level):
+        return level >= self.level
+
+
 def add_log_handler():
     tries = 0
     while tries < 5:
         try:
             docassemble_log_handler = logging.FileHandler(filename=os.path.join(LOG_DIRECTORY, 'docassemble.log'))
         except PermissionError:
+            sys.stderr.write("Unable to open docassemble.log; trying again\n")
             time.sleep(1)
             tries += 1
             continue
@@ -1404,8 +1412,11 @@ def add_log_handler():
         break
 
 if not (in_celery or in_cron or daconfig.get('log to std', False)):
+    logging.setLoggerClass(UnsilenceableLogger)
     sys_logger = logging.getLogger('docassemble')
+    logging.setLoggerClass(logging.Logger)
     sys_logger.setLevel(logging.DEBUG)
+    sys_logger.propagate = False
     add_log_handler()
     if LOGSERVER is None:
         docassemble.base.logger.set_logmessage(syslog_message_with_timestamp)
@@ -11341,7 +11352,7 @@ SOFTWARE.
 """
         gitignore = daconfig.get('default gitignore', DEFAULT_GITIGNORE)
         readme = '# docassemble.' + str(pkgname) + "\n\nA docassemble extension.\n\n## Author\n\n" + name_of_user(current_user, include_email=True) + "\n"
-        pyprojecttoml = tomli_w.dumps({'build-system': {'requires': ['setuptools=>80.9.0'], 'build-backend': 'setuptools.build_meta'}, 'project': {'name': f'docassemble.{pkgname}', 'version': '0.0.1', 'description': 'A docassemble extension.', 'readme': 'README.md', 'authors': [{'name': str(name_of_user(current_user)), 'email': str(current_user.email)}], 'license': 'MIT', 'license-files': ['LICENSE'], 'urls': {'Homepage': 'https://docassemble.org'}}, 'tool': {'setuptools': {'packages': {'find': {'where': ['.']}}}}})
+        pyprojecttoml = tomli_w.dumps({'build-system': {'requires': ['setuptools>=80.9.0'], 'build-backend': 'setuptools.build_meta'}, 'project': {'name': f'docassemble.{pkgname}', 'version': '0.0.1', 'description': 'A docassemble extension.', 'readme': 'README.md', 'authors': [{'name': str(name_of_user(current_user)), 'email': str(current_user.email)}], 'license': 'MIT', 'license-files': ['LICENSE'], 'urls': {'Homepage': 'https://docassemble.org'}}, 'tool': {'setuptools': {'packages': {'find': {'where': ['.']}}}}})
         manifestin = f"""\
 include README.md
 graft docassemble/{pkgname}/data
@@ -23992,6 +24003,31 @@ def make_necessary_dirs():
     if app.config['ALLOW_RESTARTING'] and not os.access(WEBAPP_PATH, os.W_OK):
         sys.exit("Unable to modify the timestamp of the WSGI file: " + WEBAPP_PATH)
 
+
+def register_db(db_name):
+    if db_name in db.engines:
+        return db
+    url = docassemble.webapp.user_database.alchemy_url(db_name)
+    bind = {'url': url, 'pool_pre_ping': daconfig.get('sql ping', False)}
+    connect_args = docassemble.webapp.user_database.connect_args(db_name)
+    if connect_args:
+        bind['connect_args'] = connect_args
+    if url.startswith('postgres'):
+        engine = create_engine(url, connect_args=connect_args, pool_pre_ping=daconfig.get('sql ping', False))
+    else:
+        engine = create_engine(url, pool_pre_ping=daconfig.get('sql ping', False))
+    db._make_metadata(db_name)
+    db._app_engines[app][db_name] = engine
+    return db
+
+
+def create_objects_in_db(db_name):
+    db.create_all(bind_key=db_name)
+    url = docassemble.webapp.user_database.alchemy_url(db_name)
+    conn_args = docassemble.webapp.user_database.connect_args(db_name)
+    return (url, conn_args, db.engines[db_name])
+
+
 if DEBUG_BOOT:
     boot_log("server: making directories that do not already exist")
 
@@ -24067,7 +24103,9 @@ docassemble.base.functions.update_server(url_finder=get_url_from_file_reference,
                                          run_action_in_session=run_action_in_session,
                                          invite_user=invite_user,
                                          get_url=get_request_url,
-                                         release_lock=release_lock)
+                                         release_lock=release_lock,
+                                         register_db=register_db,
+                                         create_objects_in_db=create_objects_in_db)
 
 # docassemble.base.util.set_user_id_function(user_id_dict)
 # docassemble.base.functions.set_generate_csrf(generate_csrf)
@@ -24098,6 +24136,7 @@ def get_base_url():
 
 def null_func(*pargs, **kwargs):  # pylint: disable=unused-argument
     logmessage("Null function called")
+
 
 if in_celery:
 

@@ -425,7 +425,9 @@ $endif$
   }
 }{
 }
-
+\makeatletter
+\@ifundefined{c@none}{\newcounter{none}}{}
+\makeatother
 \ifthenelse{\boolean{usesheader} \OR \boolean{usesfirstheader}}{
   \addtolength{\maxheaderboth}{1.76pt}
   \geometry{top=\newtop,headheight=\maxheaderboth}
