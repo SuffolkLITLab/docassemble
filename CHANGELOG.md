@@ -6,6 +6,11 @@
 
 - The instructions for writing Python modules that define `SQLObject`
   have changed.
+- If you include a `variables snapshot db` item in your configuration,
+  and there is any problem connecting to the database, the web
+  application will not start, and you will need to fix the problem
+  using command line tools, just as if you made a mistake in the `db`
+  configuration.
 
 ### Fixed
 
@@ -18,6 +23,8 @@
 - Issue with `alembic` disabling `logging`.
 - The `numpy` and `scipy` packages were inadvertently upgraded,
   preventing Python 3.10 users from upgrading.
+- The `include_docx_template()` function did not handle non-string
+  keyword arguments.
 
 ## [1.9.7] - 2026-04-05
 

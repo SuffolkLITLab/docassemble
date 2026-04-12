@@ -171,7 +171,7 @@ def include_docx_template(template_file, **kwargs):
     for key, val in kwargs.items():
         if hasattr(val, 'instanceName'):
             the_repr = val.instanceName
-        elif isinstance(val, bool):
+        elif isinstance(val, (int, float, bool, NoneType)):
             the_repr = val
         else:
             the_repr = '_codecs.decode(_array.array("b", "' + re.sub(r'\n', '', codecs.encode(bytearray(val, encoding='utf-8'), 'base64').decode()) + '".encode()), "base64").decode()'
