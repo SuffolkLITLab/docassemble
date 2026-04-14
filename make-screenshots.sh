@@ -6,8 +6,8 @@ else
     IMGDIR="img"
 fi
 
-#tempfile=`mktemp /tmp/XXXXXXX.png`
-datafile=`mktemp /tmp/XXXXXXX.txt`
+#tempfile=`mktemp /tmp/screenshot.png.XXXXXXX`
+datafile=`mktemp /tmp/screenshot.txt.XXXXXXX`
 featurefile=tests/features/Screenshots.feature
 echo -e -n "Feature: screenshots\n  Make screenshots" > $featurefile
 if [ "$DARKMODE" = true ]; then
@@ -275,7 +275,7 @@ do
     then
         continue
     fi
-    tempfile=`mktemp /tmp/XXXXXXX.png`
+    tempfile=`mktemp /tmp/screenshot.png.XXXXXXX`
     echo -e -n "\n\n  Scenario: make screenshot for $tfile\n    Given I launch the interview \"docassemble.${area}:data/questions/examples/${tfile}.yml\"" >> $featurefile
     if [ "$tfile" = "signature" -o \
 	 "$tfile" = "metadata" -o \
@@ -455,7 +455,7 @@ then
 	./get_yaml_from_example.py docassemble_base/docassemble/base/data/questions/examples ~/gh-pages-da/img/examples > ~/gh-pages-da/_data/example.yml
 	./get_yaml_from_example.py docassemble_demo/docassemble/demo/data/questions/examples ~/gh-pages-da/img/examples >> ~/gh-pages-da/_data/example.yml
     fi
-    list_of_files=`mktemp /tmp/XXXXXXX.txt`
+    list_of_files=`mktemp /tmp/screenshot.txt.XXXXXXX`
     grep '^    - ' docassemble_base/docassemble/base/data/questions/example-list.yml | sed 's/^    - \(.*\)/\1.png/' > $list_of_files
     if [ "$DARKMODE" = true ]; then
 	rsync -auv --files-from=$list_of_files ~/gh-pages-da/${IMGDIR}/examples docassemble_webapp/docassemble/webapp/static/examplesdark/

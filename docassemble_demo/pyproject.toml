@@ -3,7 +3,7 @@ requires = ["setuptools==82.0.1"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "suffolklitlab-docassemble.demo"
-version = '1.9.8'
+version = '1.9.8.post1'
 description = "Suffolk LIT Lab's fork of a demonstration package for docassemble."
 readme = "README.md"
 authors = [
@@ -14,7 +14,7 @@ license = "MIT"
 license-files = ["LICENSE.txt"]
 requires-python = ">= 3.9"
 dependencies = [
-  'suffolklitlab-docassemble.base==1.9.8'
+  'suffolklitlab-docassemble.base==1.9.8.post1'
 #  "ics",
 #  "openai",
 #  "anthropic",
