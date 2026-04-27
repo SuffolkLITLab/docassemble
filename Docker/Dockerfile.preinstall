@@ -1,0 +1,8 @@
+FROM ghcr.io/suffolklitlab/docassemble
+
+COPY requirements-preinstall.txt /tmp/requirements-preinstall.txt
+
+USER www-data
+RUN bash -c \
+"source /usr/share/docassemble/local3.12/bin/activate \
+&& pip install --no-cache-dir -r /tmp/requirements-preinstall.txt"

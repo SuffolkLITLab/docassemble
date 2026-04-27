@@ -86,8 +86,7 @@ RUN bash -c \
 && pip install \
    /tmp/docassemble/docassemble_base \
    /tmp/docassemble/docassemble_demo \
-   /tmp/docassemble/docassemble_webapp \
-&& pip install --no-cache-dir -r /tmp/docassemble/Docker/requirements-preinstall.txt"
+   /tmp/docassemble/docassemble_webapp"
 
 USER root
 RUN bash -c \
