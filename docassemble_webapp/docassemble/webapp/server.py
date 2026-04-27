@@ -206,7 +206,8 @@ PERMISSIONS_LIST = [
     'interview_data',
     'log_user_in',
     'playground_control',
-    'template_parse'
+    'read_packages',
+    'template_parse' 
     ]
 
 CAN_CONVERT_WORD = can_convert_word_to_markdown()
@@ -21443,8 +21444,12 @@ def should_run_create(package_name):
 @csrf.exempt
 @cross_origin(origins='*', methods=['GET', 'POST', 'DELETE', 'HEAD'], automatic_options=True)
 def api_package():
-    if not api_verify(roles=['admin', 'developer'], permissions=['manage_packages']):
-        return jsonify_with_status("Access denied.", 403)
+    if request.method == 'GET':
+        if not api_verify(roles=['admin', 'developer'], permissions=['manage_packages', 'read_packages']):
+            return jsonify_with_status("Access denied.", 403)
+    else:
+        if not api_verify(roles=['admin', 'developer'], permissions=['manage_packages']):
+            return jsonify_with_status("Access denied.", 403)
     if request.method == 'GET':
         package_list, package_auth = get_package_info()  # pylint: disable=unused-variable
         packages = []
