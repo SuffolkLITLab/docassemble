@@ -31,7 +31,6 @@ DOCKERFILE_PACKAGES = {
 }
 
 # These three are installed directly from source in the Dockerfile.
-# They don't exist on PyPI as standalone packages.
 DOCASSEMBLE_CORE = {
     "docassemble.base",
     "docassemble.demo",
