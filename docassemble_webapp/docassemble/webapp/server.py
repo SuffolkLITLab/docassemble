@@ -21447,10 +21447,6 @@ def api_package():
     if request.method == 'GET':
         if not api_verify(roles=['admin', 'developer'], permissions=['manage_packages', 'read_packages']):
             return jsonify_with_status("Access denied.", 403)
-    else:
-        if not api_verify(roles=['admin', 'developer'], permissions=['manage_packages']):
-            return jsonify_with_status("Access denied.", 403)
-    if request.method == 'GET':
         package_list, package_auth = get_package_info()  # pylint: disable=unused-variable
         packages = []
         for package in package_list:
@@ -21467,6 +21463,8 @@ def api_package():
                 item['zip_file_number'] = package.package.upload
             packages.append(item)
         return jsonify(packages)
+    if not api_verify(roles=['admin', 'developer'], permissions=['manage_packages']):
+        return jsonify_with_status("Access denied.", 403)
     if request.method == 'DELETE':
         if not app.config['ALLOW_UPDATES']:
             return ('File not found', 404)
