@@ -180,6 +180,7 @@ PERMISSIONS_LIST = [
     'interview_data',
     'log_user_in',
     'playground_control',
+    'read_packages',
     'template_parse'
     ]
 
