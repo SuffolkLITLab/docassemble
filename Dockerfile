@@ -15,7 +15,8 @@ bash -c \
 && apt-get -q -y update \
 && apt-get -q -y install nginx \
 && cp /tmp/docassemble/Docker/nginx.conf /etc/nginx/ \
-&& rm /etc/nginx/conf.d/default.conf"
+&& rm /etc/nginx/conf.d/default.conf \
+&& apt-get -q -y clean"
 
 COPY --chown=www-data . /tmp/docassemble/
 
@@ -93,7 +94,151 @@ RUN bash -c \
 && mv /etc/cron.daily/exim4-base /usr/share/docassemble/cron/exim4-base \
 && ln -s /usr/share/docassemble/cron/exim4-base /etc/cron.daily/exim4-base \
 && mv /etc/syslog-ng/syslog-ng.conf /usr/share/docassemble/syslogng/syslog-ng.conf \
-&& ln -s /usr/share/docassemble/syslogng/syslog-ng.conf /etc/syslog-ng/syslog-ng.conf"
+&& ln -s /usr/share/docassemble/syslogng/syslog-ng.conf /etc/syslog-ng/syslog-ng.conf \
+&& { if [[ '$(dpkg --print-architecture)' == 'amd64' ]]; then cp /usr/share/docassemble/local3.12/lib/python3.12/site-packages/mod_wsgi/server/mod_wsgi-py312.cpython-312-x86_64-linux-gnu.so /usr/lib/apache2/modules/mod_wsgi.so-3.12; else cp /usr/share/docassemble/local3.12/lib/python3.12/site-packages/mod_wsgi/server/mod_wsgi-py312.cpython-312-aarch64-linux-gnu.so /usr/lib/apache2/modules/mod_wsgi.so-3.12; fi; } \
+&& rm -f /usr/lib/apache2/modules/mod_wsgi.so \
+&& ln -s /usr/lib/apache2/modules/mod_wsgi.so-3.12 /usr/lib/apache2/modules/mod_wsgi.so \
+&& rm -f /etc/cron.daily/apt-compat \
+&& sed -i -e 's/^\(daemonize\s*\)yes\s*$/\1no/g' -e 's/^bind 127.0.0.1/bind 0.0.0.0/g' /etc/redis/redis.conf \
+&& sed -i -e 's/#APACHE_ULIMIT_MAX_FILES/APACHE_ULIMIT_MAX_FILES/' -e 's/ulimit -n 65536/ulimit -n 8192/' /etc/apache2/envvars \
+&& sed -i '/session    required     pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/cron \
+&& LANG=en_US.UTF-8 \
+&& { a2dismod ssl \
+; a2enmod rewrite \
+; a2enmod xsendfile \
+; a2enmod proxy \
+; a2enmod proxy_http \
+; a2enmod proxy_wstunnel \
+; a2enmod headers \
+; a2enconf docassemble \
+; echo 'export TERM=xterm' >> /etc/bash.bashrc; }\
+&& apt-get -q -y install # install them now instead of at runtime \
+		    texlive-fonts-extra \
+		    fonts-adf-accanthis \
+		    fonts-adf-berenis \
+		    fonts-adf-gillius \
+		    fonts-adf-universalis \
+		    fonts-arkpandora \
+		    fonts-beng \
+		    fonts-beng-extra \
+		    fonts-cabin \
+		    fonts-cantarell \
+		    fonts-clear-sans \
+		    fonts-comfortaa \
+		    fonts-comic-neue \
+		    fonts-deva \
+		    fonts-deva-extra \
+		    fonts-ebgaramond-extra \
+		    fonts-font-awesome \
+		    fonts-gargi \
+		    fonts-gfs-artemisia \
+		    fonts-gfs-complutum \
+		    fonts-gfs-didot \
+		    fonts-gfs-neohellenic \
+		    fonts-gfs-olga \
+		    fonts-gfs-solomos \
+		    fonts-go \
+		    fonts-gubbi \
+		    fonts-gujr \
+		    fonts-gujr-extra \
+		    fonts-guru \
+		    fonts-guru-extra \
+		    fonts-indic \
+		    fonts-inter \
+		    fonts-kalapi \
+		    fonts-knda \
+		    fonts-lato \
+		    fonts-liberation2 \
+		    fonts-lobster \
+		    fonts-lobstertwo \
+		    fonts-lohit-beng-assamese \
+		    fonts-lohit-beng-bengali \
+		    fonts-lohit-deva \
+		    fonts-lohit-gujr \
+		    fonts-lohit-guru \
+		    fonts-lohit-knda \
+		    fonts-lohit-mlym \
+		    fonts-lohit-orya \
+		    fonts-lohit-taml \
+		    fonts-lohit-taml-classical \
+		    fonts-lohit-telu \
+		    fonts-mlym \
+		    fonts-nakula \
+		    fonts-navilu \
+		    fonts-noto \
+		    fonts-noto-cjk \
+		    fonts-noto-cjk-extra \
+		    fonts-noto-core \
+		    fonts-noto-extra \
+		    fonts-noto-ui-extra \
+		    fonts-noto-unhinted \
+		    fonts-oflb-asana-math \
+		    fonts-open-sans \
+		    fonts-orya \
+		    fonts-orya-extra \
+		    fonts-pagul \
+		    fonts-paratype \
+		    fonts-roboto-slab \
+		    fonts-roboto-unhinted \
+		    fonts-sahadeva \
+		    fonts-samyak \
+		    fonts-samyak-deva \
+		    fonts-samyak-gujr \
+		    fonts-samyak-mlym \
+		    fonts-samyak-orya \
+		    fonts-samyak-taml \
+		    fonts-sarai \
+		    fonts-sil-andika \
+		    fonts-sil-annapurna \
+		    fonts-sil-charis \
+		    fonts-sil-gentiumplus \
+		    fonts-sil-gentiumplus-compact \
+		    fonts-smc \
+		    fonts-smc-anjalioldlipi \
+		    fonts-smc-chilanka \
+		    fonts-smc-dyuthi \
+		    fonts-smc-gayathri \
+		    fonts-smc-karumbi \
+		    fonts-smc-keraleeyam \
+		    fonts-smc-manjari \
+		    fonts-smc-meera \
+		    fonts-smc-rachana \
+		    fonts-smc-raghumalayalamsans \
+		    fonts-smc-suruma \
+		    fonts-smc-uroob \
+		    fonts-stix \
+		    fonts-taml \
+		    fonts-telu \
+		    fonts-telu-extra \
+		    fonts-teluguvijayam \
+		    fonts-yrsa-rasa \
+		    cm-super \
+&& apt-get -q -y clean \
+&& { cd /tmp \
+		  && wget -q -O google-fonts.tar.gz https://github.com/google/fonts/archive/main.tar.gz \
+		  && tar -zxf google-fonts.tar.gz \
+		  && rm google-fonts.tar.gz \
+		  && mkdir -p /usr/share/fonts/truetype/google-fonts \
+		  && find ./fonts-main/ -name "*.ttf" -exec install -m644 {} /usr/share/fonts/truetype/google-fonts/ \; \
+		  && rm -r ./fonts-main \
+		  && fc-cache -f -v; } &> /dev/null"
+
+USER www-data
+RUN bash -c \
+"source /usr/share/docassemble/local3.12/bin/activate \
+&& python /tmp/docassemble/Docker/nltkdownload.py \
+&& cd /var/www/nltk_data/corpora \
+&& unzip -o wordnet.zip \
+&& unzip -o omw-1.4.zip \
+&& cd /tmp \
+&& mkdir -p /tmp/conv \
+&& pandoc --pdf-engine=lualatex -M latextmpdir=./conv -M pdfa=false /usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/Legal-Template.yml --template=/usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/Legal-Template.tex --from=markdown+raw_tex-latex_macros -s -o /tmp/temp.pdf /usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/hello.md \
+&& rm /tmp/temp.pdf \
+&& pandoc --pdf-engine=lualatex -M latextmpdir=./conv -M pdfa=false --template=/usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/Legal-Template.rtf -s -o /tmp/temp.rtf /usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/hello.md \
+&& rm /tmp/temp.rtf"
+
+USER root
+RUN rm -rf /tmp/docassemble
 
 EXPOSE 80 443 9001 514 25 465 8080 8081 8082 5432 6379 4369 5671 5672 25672
 ENV \
