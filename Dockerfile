@@ -1,4 +1,4 @@
-FROM jhpyle/docassemble-os
+FROM jhpyle/docassemble-os:1.0.28
 USER root
 
 COPY ./Docker/nginx.conf /tmp/docassemble/Docker/nginx.conf
