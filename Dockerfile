@@ -1,5 +1,4 @@
-# syntax=docker/dockerfile:1
-FROM jhpyle/docassemble-os
+FROM jhpyle/docassemble-os:1.0.31
 USER root
 
 COPY ./Docker/nginx.conf /tmp/docassemble/Docker/nginx.conf
