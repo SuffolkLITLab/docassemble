@@ -35313,14 +35313,18 @@ function daInitialize(doScroll) {
             }
           }
         } else {
-          var firstButton = $("#danavbar-collapse .nav-link")
+          var pageTitle = $("#dapagetitle, #daquestionlabel")
             .filter(":visible")
             .first();
-          if (firstButton.length > 0 && $(firstButton).visible()) {
-            setTimeout(function () {
+          if (pageTitle.length > 0 && $(pageTitle).visible()) {
+            $(pageTitle).focus();
+          } else {
+            var firstButton = $("#danavbar-collapse .nav-link")
+              .filter(":visible")
+              .first();
+            if (firstButton.length > 0 && $(firstButton).visible()) {
               $(firstButton).focus();
-              $(firstButton).blur();
-            }, 0);
+            }
           }
         }
       }, 15);

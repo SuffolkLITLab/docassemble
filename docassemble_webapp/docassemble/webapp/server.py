@@ -3327,7 +3327,7 @@ def make_navbar(status, steps, show_login, chat_info, debug_mode, index_params, 
 """
     else:
         navbar += """\
-          <span id="dapagetitle" class="navbar-brand danavbar-title"><span class="d-none d-lg-block">""" + status.display_title + """</span><span class="d-block d-lg-none">""" + status.display_short_title + """</span></span>
+          <span id="dapagetitle" tabindex="-1" class="navbar-brand danavbar-title"><span class="d-none d-lg-block">""" + status.display_title + """</span><span class="d-block d-lg-none">""" + status.display_short_title + """</span></span>
 """
     help_message = word("Help is available")
     help_label = None
