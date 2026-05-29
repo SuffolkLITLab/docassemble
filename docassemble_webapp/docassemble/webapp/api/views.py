@@ -65,7 +65,7 @@ def manage_api():
             argu['tab_title'] = argu['title']
             argu['page_title'] = argu['title']
             permissions_data = form.permissions.data if is_admin else []
-            info = {'name': form.name.data, 'method': form.method.data, 'constraints': constraints, 'limits': permissions_data}
+            info = {'name': form.name.data, 'method': form.method.data, 'constraints': constraints, 'permissions': permissions_data}
             success = False
             for attempt in range(10):  # pylint: disable=unused-variable
                 api_key = random_alphanumeric(32)
