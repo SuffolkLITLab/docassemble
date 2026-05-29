@@ -22492,14 +22492,14 @@ def do_api_user_api(user_id):
                     try:
                         permissions = json.loads(permissions)
                     except:
-                        return jsonify_with_status("Permissions list not a valid list", 400)
+                        return jsonify_with_status("Permissions list not valid json", 400)
                 if not isinstance(permissions, list):
                     return jsonify_with_status("Permissions list not a valid list", 400)
                 try:
                     for item in permissions:
                         assert isinstance(item, str)
                 except:
-                    return jsonify_with_status("Permissions list not a valid list", 400)
+                    return jsonify_with_status("Permissions list should contain all strings", 400)
                 try:
                     for item in permissions:
                         assert item in PERMISSIONS_LIST
@@ -22797,7 +22797,7 @@ def manage_api():
             argu['tab_title'] = argu['title']
             argu['page_title'] = argu['title']
             permissions_data = form.permissions.data if is_admin else []
-            info = {'name': form.name.data, 'method': form.method.data, 'constraints': constraints, 'limits': permissions_data}
+            info = {'name': form.name.data, 'method': form.method.data, 'constraints': constraints, 'permissions': permissions_data}
             success = False
             for attempt in range(10):  # pylint: disable=unused-variable
                 api_key = random_alphanumeric(32)
