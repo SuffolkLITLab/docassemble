@@ -5060,11 +5060,11 @@ function daInitialize(doScroll) {
             }
           }
         } else {
-          var pageTitle = $("#dapagetitle, #daquestionlabel")
+          var questionTitle = $("#daMainQuestion, #dasigtitle")
             .filter(":visible")
             .first();
-          if (pageTitle.length > 0 && $(pageTitle).visible()) {
-            $(pageTitle).focus();
+          if (questionTitle.length > 0 && $(questionTitle).visible()) {
+            $(questionTitle).attr("tabindex", "-1").focus();
           } else {
             var firstButton = $("#danavbar-collapse .nav-link")
               .filter(":visible")

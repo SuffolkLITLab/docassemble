@@ -958,7 +958,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
         if status.pre:
             output += '                <div class="d-none d-sm-block da-d-sm-block">' + markdown_to_html(status.pre, trim=False, status=status) + '</div>\n'
         if status.questionText:
-            output += '                <div class="da-page-header d-none d-sm-block da-d-sm-block"><h1 class="h3">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+            output += '                <div class="da-page-header d-none d-sm-block da-d-sm-block"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         output += '              </div>'
         if status.subquestionText:
             output += '                <div id="dasigmidpart" class="dasigmidpart da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
