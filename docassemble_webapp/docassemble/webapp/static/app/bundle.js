@@ -46537,14 +46537,18 @@ function daInitialize(doScroll) {
             }
           }
         } else {
-          var firstButton = $("#danavbar-collapse .nav-link")
+          var questionTitle = $("#daMainQuestion, #dasigtitle")
             .filter(":visible")
             .first();
-          if (firstButton.length > 0 && $(firstButton).visible()) {
-            setTimeout(function () {
+          if (questionTitle.length > 0 && $(questionTitle).visible()) {
+            $(questionTitle).attr("tabindex", "-1").focus();
+          } else {
+            var firstButton = $("#danavbar-collapse .nav-link")
+              .filter(":visible")
+              .first();
+            if (firstButton.length > 0 && $(firstButton).visible()) {
               $(firstButton).focus();
-              $(firstButton).blur();
-            }, 0);
+            }
           }
         }
       }, 15);
