@@ -9264,6 +9264,13 @@ def index(action_argument=None, refer=None):
         the_nav_bar = ''
         interview_status.using_navigation = False
     content = as_html(interview_status, debug_mode, url_for('index', **index_params), validation_rules, the_field_errors, the_progress_bar, steps - user_dict['_internal']['steps_offset'])
+    sr_announcements = docassemble.base.functions.this_thread.internal.pop('sr_announcements', [])
+    if sr_announcements and 'btn-darevisit' in content:
+        content = content.replace(
+            '</h1><div class="daclear">',
+            '<span class="visually-hidden">, ' + ' '.join(noquote(text) for text in sr_announcements) + '</span></h1><div class="daclear">',
+            1
+        )
     if debug_mode:
         readability = {}
         for question_type in ('question', 'help'):

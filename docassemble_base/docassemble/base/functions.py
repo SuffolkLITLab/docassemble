@@ -4115,6 +4115,17 @@ def message(*pargs, **kwargs):
     raise QuestionError(*pargs, **kwargs)
 
 
+def add_sr_announcement(message_text):
+    """Queues a message to be announced to a screen reader users on the next page load"""
+    if not hasattr(this_thread, 'internal') or this_thread.internal is None:
+        this_thread.internal = {}
+    if 'sr_announcements' not in this_thread.internal:
+        this_thread.internal['sr_announcements'] = []
+    text = str(message_text)
+    if text not in this_thread.internal['sr_announcements']:
+        this_thread.internal['sr_announcements'].append(text)
+
+
 def response(*pargs, **kwargs):
     """Sends a custom HTTP response."""
     raise ResponseError(*pargs, **kwargs)
@@ -4581,6 +4592,7 @@ def process_action():
         if 'action_item' in this_thread.current_info and 'action_list' in this_thread.current_info:
             try:
                 this_thread.current_info['action_list'].pop(this_thread.current_info['action_item'])
+                add_sr_announcement(word('Item removed') + '.')
                 if len(this_thread.current_info['action_list'].elements) == 0 and hasattr(this_thread.current_info['action_list'], 'there_are_any'):
                     this_thread.current_info['action_list'].there_are_any = False
                 if hasattr(this_thread.current_info['action_list'], 'there_is_another') and this_thread.current_info['action_list'].there_is_another:
@@ -4605,6 +4617,7 @@ def process_action():
         if 'action_item' in this_thread.current_info and 'action_dict' in this_thread.current_info:
             try:
                 this_thread.current_info['action_dict'].pop(this_thread.current_info['action_item'])
+                add_sr_announcement(word('Item removed') + '.')
                 if len(this_thread.current_info['action_dict'].elements) == 0 and hasattr(this_thread.current_info['action_dict'], 'there_are_any'):
                     this_thread.current_info['action_dict'].there_are_any = False
                 if hasattr(this_thread.current_info['action_dict'], 'there_is_another') and this_thread.current_info['action_dict'].there_is_another:
