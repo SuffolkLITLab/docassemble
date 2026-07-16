@@ -1074,6 +1074,7 @@ var daYamlFilename;
 var daNotificationContainer;
 var daNotificationMessage;
 var daMessageLog;
+var daPendingAnnouncement = false;
 var daImageToPreLoad;
 var daGetVariablesUrl;
 var daLiveHelpMessage;
@@ -3140,6 +3141,15 @@ function daProcessAjax(data, form, doScroll, actionURL) {
       window.scrollTo(0, 1);
     }
     $(daTargetDiv).html(data.body);
+    if (data.message_log) {
+      var srMessages = data.message_log.filter(function(m) {
+        return m.priority === 'info' || m.priority === 'success' || m.priority === 'warning' || m.priority === 'danger';
+      });
+      if (srMessages.length > 0) {
+        $("#daSrAnnouncement").text(srMessages.map(function(m) { return m.message; }).join(' '));
+        daPendingAnnouncement = true;
+      }
+    }
     $(daTargetDiv).parent().removeClass();
     $(daTargetDiv).parent().addClass(data.bodyclass);
     $("meta[name=viewport]").attr(
@@ -5059,6 +5069,16 @@ function daInitialize(doScroll) {
               }
             }
           }
+        } else if (daPendingAnnouncement) {
+          daPendingAnnouncement = false;
+          setTimeout(function () {
+            var questionTitle = $("#daMainQuestion, #dasigtitle")
+              .filter(":visible")
+              .first();
+            if (questionTitle.length > 0 && $(questionTitle).visible()) {
+              $(questionTitle).attr("tabindex", "-1").focus();
+            }
+          }, 700);
         } else {
           var questionTitle = $("#daMainQuestion, #dasigtitle")
             .filter(":visible")
@@ -6511,6 +6531,15 @@ function daReadyFunction() {
         //console.log("Got newpage")
         var data = incoming.obj;
         $(daTargetDiv).html(data.body);
+        if (data.message_log) {
+          var srMessages = data.message_log.filter(function(m) {
+            return m.priority === 'info' || m.priority === 'success' || m.priority === 'warning' || m.priority === 'danger';
+          });
+          if (srMessages.length > 0) {
+            $("#daSrAnnouncement").text(srMessages.map(function(m) { return m.message; }).join(' '));
+            daPendingAnnouncement = true;
+          }
+        }
         $(daTargetDiv).parent().removeClass();
         $(daTargetDiv).parent().addClass(data.bodyclass);
         daInitialize(1);
