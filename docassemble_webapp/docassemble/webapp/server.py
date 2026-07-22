@@ -9264,13 +9264,6 @@ def index(action_argument=None, refer=None):
         the_nav_bar = ''
         interview_status.using_navigation = False
     content = as_html(interview_status, debug_mode, url_for('index', **index_params), validation_rules, the_field_errors, the_progress_bar, steps - user_dict['_internal']['steps_offset'])
-    sr_announcements = docassemble.base.functions.this_thread.internal.pop('sr_announcements', [])
-    if sr_announcements and 'btn-darevisit' in content:
-        content = content.replace(
-            '</h1><div class="daclear">',
-            '<span class="visually-hidden">, ' + ' '.join(noquote(text) for text in sr_announcements) + '</span></h1><div class="daclear">',
-            1
-        )
     if debug_mode:
         readability = {}
         for question_type in ('question', 'help'):
@@ -9349,7 +9342,7 @@ def index(action_argument=None, refer=None):
             scripts += additional_css(interview_status, js_only=True)
         else:
             start_output += global_css + additional_css(interview_status)
-            start_output += '\n    <title>' + interview_status.tabtitle + '</title>\n  </head>\n  <body class="' + bodyclass + '">\n  <div id="daSrAnnouncement" aria-live="assertive" class="visually-hidden"></div>\n  <div id="dabody">\n'
+            start_output += '\n    <title>' + interview_status.tabtitle + '</title>\n  </head>\n  <body class="' + bodyclass + '">\n  <div id="dabody">\n'
     if interview.options.get('hide navbar', False):
         output = make_navbar(interview_status, (steps - user_dict['_internal']['steps_offset']), interview.consolidated_metadata.get('show login', SHOW_LOGIN), user_dict['_internal']['livehelp'], debug_mode, index_params, extra_class='dainvisible')
     else:
