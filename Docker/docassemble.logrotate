@@ -11,7 +11,6 @@
         su www-data www-data
 	create 600 www-data www-data
 	rotate 7
-	maxsize 5M
 	daily
 	missingok
 	notifempty
