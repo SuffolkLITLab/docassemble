@@ -3661,7 +3661,8 @@ def process_action():
     if the_action == '_da_list_remove':
         if 'action_item' in this_thread.current_info and 'action_list' in this_thread.current_info:
             try:
-                this_thread.current_info['action_list'].pop(this_thread.current_info['action_item'])
+                item_popped = this_thread.current_info['action_list'].pop(this_thread.current_info['action_item'])
+                log(str(item_popped) + ' ' + word('removed') + '.', 'info')
                 if len(this_thread.current_info['action_list'].elements) == 0 and hasattr(this_thread.current_info['action_list'], 'there_are_any'):
                     this_thread.current_info['action_list'].there_are_any = False
                 if hasattr(this_thread.current_info['action_list'], 'there_is_another') and this_thread.current_info['action_list'].there_is_another:
@@ -3685,7 +3686,8 @@ def process_action():
     if the_action == '_da_dict_remove':
         if 'action_item' in this_thread.current_info and 'action_dict' in this_thread.current_info:
             try:
-                this_thread.current_info['action_dict'].pop(this_thread.current_info['action_item'])
+                item_popped = this_thread.current_info['action_dict'].pop(this_thread.current_info['action_item'])
+                log(str(item_popped) + ' ' + word('removed') + '.', 'info')
                 if len(this_thread.current_info['action_dict'].elements) == 0 and hasattr(this_thread.current_info['action_dict'], 'there_are_any'):
                     this_thread.current_info['action_dict'].there_are_any = False
                 if hasattr(this_thread.current_info['action_dict'], 'there_is_another') and this_thread.current_info['action_dict'].there_is_another:
