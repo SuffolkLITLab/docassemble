@@ -2465,7 +2465,7 @@ class Question:
             else:
                 self.is_initial = False
                 if isinstance(data['initial'], str):
-                    self.initial_code = compile(data['initial'], '<initial code>', 'eval')
+                    self.initial_code = compile(data['initial'], f'<initial code in {self.id_debug(data)}>', 'eval')
                     self.find_fields_in(data['initial'])
                 else:
                     self.initial_code = None
@@ -3046,10 +3046,10 @@ class Question:
                     self.action_buttons.append(button)
         if 'if' in data:
             if isinstance(data['if'], str):
-                self.condition = [compile(data['if'], '<if code>', 'eval')]
+                self.condition = [compile(data['if'], f'<if code in {self.id_debug(data)}>', 'eval')]
                 self.find_fields_in(data['if'])
             elif isinstance(data['if'], list):
-                self.condition = [compile(x, '<if code>', 'eval') for x in data['if']]
+                self.condition = [compile(x, f'<if code in {self.id_debug(data)}>', 'eval') for x in data['if']]
                 for x in data['if']:
                     self.find_fields_in(x)
             else:
@@ -3502,7 +3502,7 @@ class Question:
                     raise DASourceError("In 'need', the items must be text strings." + self.idebug(data))
             if len(pre_need_list) > 0:
                 try:
-                    self.need = list(map((lambda x: compile(x, '<need expression>', 'eval')), pre_need_list))
+                    self.need = list(map((lambda x: compile(x, f'<need expression in {self.id_debug(data)}>', 'eval')), pre_need_list))
                     for x in pre_need_list:
                         self.find_fields_in(x)
                 except:
@@ -3646,7 +3646,7 @@ class Question:
                 sort_key = None
                 sort_reverse = None
             if 'filter' in data:
-                filter_expression = compile(str(data['filter']), '<filter code>', 'eval')
+                filter_expression = compile(str(data['filter']), f'<filter code in {self.id_debug(data)}>', 'eval')
             else:
                 filter_expression = None
             field_data = {'saveas': data['table'], 'extras': {'header': header, 'row': row, 'column': column, 'empty_message': empty_message, 'indent': data.get('indent', False), 'is_editable': is_editable, 'require_gathered': require_gathered, 'show_incomplete': show_incomplete, 'not_available_label': not_available_label, 'sort_key': sort_key, 'sort_reverse': sort_reverse, 'filter_expression': filter_expression}}
@@ -3821,7 +3821,7 @@ class Question:
                 if len(field) == 1 and 'code' in field:
                     field_info['type'] = 'fields_code'
                     self.find_fields_in(field['code'])
-                    field_info['extras'] = {'fields_code': compile(field['code'], '<fields code>', 'eval')}
+                    field_info['extras'] = {'fields_code': compile(field['code'], f'<fields code in {self.id_debug(data)}>', 'eval')}
                     self.fields.append(Field(field_info))
                     field_number += 1
                     if 'current_field' in this_thread.misc:
@@ -4014,7 +4014,7 @@ class Question:
                                     field_info['extras']['show_if_val'] = TextObject(str(field[key]['is']))
                                 showif_valid = True
                             if 'code' in field[key]:
-                                field_info['showif_code'] = compile(field[key]['code'], '<show if code>', 'eval')
+                                field_info['showif_code'] = compile(field[key]['code'], f'<show if code {self.id_debug(data)}>', 'eval')
                                 self.find_fields_in(field[key]['code'])
                                 showif_valid = True
                             if not showif_valid:
@@ -4070,7 +4070,7 @@ class Question:
                                     field_info['extras']['show_if_val'] = TextObject(str(field[key]['is']))
                                 showif_valid = True
                             if 'code' in field[key]:
-                                field_info['showif_code'] = compile(field[key]['code'], '<show if code>', 'eval')
+                                field_info['showif_code'] = compile(field[key]['code'], f'<show if code in {self.id_debug(data)}>', 'eval')
                                 self.find_fields_in(field[key]['code'])
                                 showif_valid = True
                             if not showif_valid:
@@ -4154,7 +4154,7 @@ class Question:
                     elif key == 'code':
                         self.find_fields_in(field[key])
                         field_info['choicetype'] = 'compute'
-                        field_info['selections'] = {'compute': compile(field[key], '<choices code>', 'eval'), 'sourcecode': field[key]}
+                        field_info['selections'] = {'compute': compile(field[key], f'<choices code in {self.id_debug(data)}>', 'eval'), 'sourcecode': field[key]}
                         self.find_fields_in(field[key])
                         if 'exclude' in field:
                             if isinstance(field['exclude'], dict):
@@ -4383,7 +4383,7 @@ class Question:
                         additional_parameters += ", image_generator=_DAIMAGEGENERATOR"
                     source_code = "docassemble_base_util_selections(" + ", ".join(select_list) + additional_parameters + ")"
                     # logmessage("source_code is " + source_code)
-                    field_info['selections'] = {'compute': compile(source_code, '<expression>', 'eval'), 'sourcecode': source_code}
+                    field_info['selections'] = {'compute': compile(source_code, f'<expression in {self.id_debug({})}>', 'eval'), 'sourcecode': source_code}
                 if 'saveas' in field_info:
                     if not isinstance(field_info['saveas'], str):
                         raise DASourceError("Invalid variable name " + repr(field_info['saveas']) + "." + self.idebug(data))
@@ -4506,7 +4506,7 @@ class Question:
                         if len(field_list) > 0:
                             if 'saveas_code' not in field_info:
                                 field_info['saveas_code'] = []
-                            field_info['saveas_code'].extend([(compile(y, '<expression>', 'eval'), True) for y in field_list])
+                            field_info['saveas_code'].extend([(compile(y, f'<expression in {self.id_debug(data)}>', 'eval'), True) for y in field_list])
                     elif key in ('field', 'fields'):
                         if 'label' not in field:
                             raise DASourceError("If you use 'field' or 'fields' to indicate variables in a 'review' section, you must also include a 'label.'" + self.idebug(data))
@@ -4849,7 +4849,7 @@ class Question:
         if plain or isinstance(target, (bool, float, int, NoneType)):
             return target
         self.find_fields_in(target)
-        return compile(target, '<expression>', 'eval')
+        return compile(target, f'<expression in {self.id_debug({})}>', 'eval')
 
     def recursive_dataobject(self, target):
         if isinstance(target, dict) or (hasattr(target, 'elements') and isinstance(target.elements, dict)):
@@ -4911,7 +4911,7 @@ class Question:
         if not isinstance(sourcecode, str):
             raise DAError("An attachment code specifier must be plain text")
         try:
-            self.compute_attachment = compile(sourcecode, '<expression>', 'eval')
+            self.compute_attachment = compile(sourcecode, f'<expression in {self.id_debug({})}>', 'eval')
             self.find_fields_in(sourcecode)
             self.sourcecode = sourcecode
         except:
@@ -4936,7 +4936,7 @@ class Question:
                 if isinstance(target['skip undefined'], bool):
                     options['skip_undefined'] = target['skip undefined']
                 elif isinstance(target['skip undefined'], str):
-                    options['skip_undefined'] = compile(target['skip undefined'], '<skip undefined expression>', 'eval')
+                    options['skip_undefined'] = compile(target['skip undefined'], f'<skip undefined expression in {self.id_debug()}>', 'eval')
                     self.find_fields_in(target['skip undefined'])
                 else:
                     raise DASourceError('Unknown data type in attachment skip undefined.' + self.idebug(target))
@@ -4955,7 +4955,7 @@ class Question:
                 if isinstance(target['redact'], (bool, NoneType)):
                     options['redact'] = target['redact']
                 else:
-                    options['redact'] = compile(target['redact'], '<expression>', 'eval')
+                    options['redact'] = compile(target['redact'], f'<expression in {self.id_debug()}>', 'eval')
                     self.find_fields_in(target['redact'])
             if 'checkbox export value' in target and 'pdf template file' in target:
                 if not isinstance(target['checkbox export value'], str):
@@ -5224,7 +5224,7 @@ class Question:
                         for varname in target['raw field variables']:
                             if not valid_variable_match.match(str(varname)):
                                 raise DASourceError('The variable ' + str(varname) + " cannot be used in a code list" + self.idebug(target))
-                            options['raw code dict'][varname] = compile(varname, '<expression>', 'eval')
+                            options['raw code dict'][varname] = compile(varname, f'<expression in {self.id_debug()}>', 'eval')
                             self.find_fields_in(varname)
                     if 'field code' in target:
                         if 'code dict' not in options:
@@ -5235,7 +5235,7 @@ class Question:
                             if not isinstance(item, dict):
                                 raise DASourceError('The field code must be expressed in the form of a dictionary' + self.idebug(target))
                             for key, val in item.items():
-                                options['code dict'][key] = compile(str(val), '<expression>', 'eval')
+                                options['code dict'][key] = compile(str(val), f'<expression in {self.id_debug()}>', 'eval')
                                 self.find_fields_in(val)
             if 'valid formats' in target:
                 if isinstance(target['valid formats'], str):
@@ -6769,13 +6769,13 @@ class Question:
                         result_dict[key] = TextObject(value, question=self)
                         continue
                     if key == 'show if':
-                        result_dict['show if'] = compile(str(value), '<choices show if code>', 'eval')
+                        result_dict['show if'] = compile(str(value), f'<choices show if code in {self.id_debug({})}>', 'eval')
                         self.find_fields_in(str(value))
                         continue
                 if uses_field:
                     if key == 'code':
                         has_code = True
-                        result_dict['compute'] = compile(value, '<expression>', 'eval')
+                        result_dict['compute'] = compile(value, f'<expression in {self.id_debug({})}>', 'eval')
                         self.find_fields_in(value)
                     else:
                         if uses_value_label:
