@@ -33393,6 +33393,17 @@ function daProcessAjax(data, form, doScroll, actionURL) {
       window.scrollTo(0, 1);
     }
     $(daTargetDiv).html(data.body);
+    if (data.message_log) {
+      var srMessages = data.message_log.filter(function(m) {
+        return m.priority === 'info' || m.priority === 'success' || m.priority === 'warning' || m.priority === 'danger';
+      });
+      if (srMessages.length > 0) {
+        var srText = srMessages.map(function(m) { return m.message; }).join(' ');
+        setTimeout(function () {
+          $("#daSrAnnouncement").text(srText);
+        }, 700);
+      }
+    }
     $(daTargetDiv).parent().removeClass();
     $(daTargetDiv).parent().addClass(data.bodyclass);
     $("meta[name=viewport]").attr(
@@ -35312,7 +35323,6 @@ function daInitialize(doScroll) {
               }
             }
           }
-        } else {
           var questionTitle = $("#daMainQuestion, #dasigtitle")
             .filter(":visible")
             .first();
@@ -36764,6 +36774,17 @@ function daReadyFunction() {
         //console.log("Got newpage")
         var data = incoming.obj;
         $(daTargetDiv).html(data.body);
+        if (data.message_log) {
+          var srMessages = data.message_log.filter(function(m) {
+            return m.priority === 'info' || m.priority === 'success' || m.priority === 'warning' || m.priority === 'danger';
+          });
+          if (srMessages.length > 0) {
+           var srText = srMessages.map(function(m) { return m.message; }).join(' ');
+            setTimeout(function () {
+              $("#daSrAnnouncement").text(srText);
+            }, 700);
+          }
+        }
         $(daTargetDiv).parent().removeClass();
         $(daTargetDiv).parent().addClass(data.bodyclass);
         daInitialize(1);
