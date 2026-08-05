@@ -15769,6 +15769,8 @@ def server_error(the_error):
         logmessage(str(the_error))
     elif isinstance(the_error, (DAError, DANotFoundError, DAInvalidFilename)):
         errmess = str(the_error)
+        if hasattr(the_error, 'da_asking_question'):
+            errmess += "\nNeeded by question: " + str(the_error.da_asking_question)
         the_trace = None
         logmessage(errmess)
     elif isinstance(the_error, TemplateError):
@@ -23899,7 +23901,25 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
         email_address = current_user.email
     except:
         email_address = None
+    session_id = None
+    real_url = None
+    temp_user_id = None
+    try:
+        current_info = docassemble.base.functions.this_thread.current_info
+        session_id = current_info.get('session')
+        real_url = current_info.get('url')
+        user_info_dict = current_info.get('user') or {}
+        if str(user_info_dict.get('the_user_id', '')).startswith('t'):
+            temp_user_id = user_info_dict.get('theid')
+    except:
+        pass
+    if email_address is None and temp_user_id is not None:
+        email_address = "temp user " + str(temp_user_id)
     if the_request:
+        try:
+            real_url = str(the_request.url)
+        except:
+            pass
         try:
             referer = str(the_request.referrer)
         except:
@@ -23946,6 +23966,12 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
             if history is not None:
                 body += "\n\n" + BeautifulSoup(history, "html.parser").get_text('\n')
                 html += history
+            if session_id is not None:
+                body += "\n\nThe session ID was " + str(session_id)
+                html += "<p>The session ID was " + str(session_id) + "</p>"
+            if real_url is not None:
+                body += "\n\nThe URL was " + str(real_url)
+                html += "<p>The URL was " + str(real_url) + "</p>"
             if referer is not None and referer != 'None':
                 body += "\n\nThe referer URL was " + str(referer)
                 html += "<p>The referer URL was " + str(referer) + "</p>"

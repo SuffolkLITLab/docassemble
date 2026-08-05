@@ -120,6 +120,8 @@ def process_error(interview, session_code, yaml_filename, secret, user_info, url
             error_trace = str(e.traceback)
             if hasattr(e, 'da_line_with_error'):
                 error_trace += "\nIn line: " + str(e.da_line_with_error)
+            if hasattr(e, 'da_asking_question'):
+                error_trace += "\nNeeded by question: " + str(e.da_asking_question)
         else:
             error_trace = None
         worker_controller.error_notification(e, message=error_message, trace=error_trace)

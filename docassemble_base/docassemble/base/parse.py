@@ -9031,7 +9031,13 @@ class Interview:
                         follow_mc = True
                         missingVariable = extract_missing_name(the_exception)
                     variables_sought.add(missingVariable)
-                    question_result = self.askfor(missingVariable, user_dict, old_user_dict, interview_status, seeking=interview_status.seeking, follow_mc=follow_mc, seeking_question=seeking_question)
+                    try:
+                        question_result = self.askfor(missingVariable, user_dict, old_user_dict, interview_status, seeking=interview_status.seeking, follow_mc=follow_mc, seeking_question=seeking_question)
+                    except DAErrorMissingVariable as _dmv_exc:
+                        _asking_question = getattr(docassemble.base.functions.this_thread, 'current_question', None)
+                        if _asking_question is not None:
+                            _dmv_exc.da_asking_question = getattr(_asking_question, 'name', None) or str(_asking_question)
+                        raise
                     if question_result['type'] in ('continue', 're_run'):
                         continue
                     if question_result['type'] == 'refresh':
