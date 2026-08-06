@@ -285,6 +285,8 @@ def run_cron(the_cron_type):
                                         error_trace = str(err.traceback)
                                         if hasattr(err, 'da_line_with_error'):
                                             error_trace += "\nIn line: " + str(err.da_line_with_error)
+                                        if hasattr(err, 'da_asking_question'):
+                                            error_trace += "\nNeeded by question: " + str(err.da_asking_question)
                                     else:
                                         error_trace = None
                                     error_notification(err, trace=error_trace)
