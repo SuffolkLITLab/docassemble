@@ -2084,15 +2084,19 @@ class Question:
                 return "\nIn file " + str(self.from_source.path) + " from package " + str(self.package) + ":\n\n" + repr(data)
             return repr(data)
 
-    def id_debug(self, data):
+    def id_debug(self, data=None):
         """One liner info about a YAML block. Used in `compile` for later error reporting."""
+        if data is None:
+            the_id = getattr(self, 'id', None)
+        else:
+            the_id = data.get('id')
         if hasattr(self, 'from_source'):
             if isinstance(self.line_number, int):
                 return f"{self.from_source.path}, block on line {self.line_number}"
-            return f"{self.from_source.path}, id:{data.get('id')}"
+            return f"{self.from_source.path}, id:{the_id}"
         if hasattr(self, 'package'):
-            return f"{self.package}, id:{data.get('id')}"
-        return data.get("id") or ""
+            return f"{self.package}, id:{the_id}"
+        return the_id or ""
 
     def __init__(self, orig_data, caller, **kwargs):
         if not isinstance(orig_data, dict):
@@ -9036,7 +9040,7 @@ class Interview:
                     except DAErrorMissingVariable as _dmv_exc:
                         _asking_question = getattr(docassemble.base.functions.this_thread, 'current_question', None)
                         if _asking_question is not None:
-                            _dmv_exc.da_asking_question = getattr(_asking_question, 'name', None) or str(_asking_question)
+                            _dmv_exc.da_asking_question = _asking_question.id_debug()
                         raise
                     if question_result['type'] in ('continue', 're_run'):
                         continue
