@@ -1039,6 +1039,8 @@ def background_action(yaml_filename, user_info, session_code, secret, url, url_r
                     error_trace = ''.join(traceback.format_tb(e.__traceback__))
                     if hasattr(e, 'da_line_with_error'):
                         error_trace += "\nIn line: " + str(e.da_line_with_error)
+                    if hasattr(e, 'da_asking_question'):
+                        error_trace += "\nNeeded by question: " + str(e.da_asking_question)
                 else:
                     error_trace = None
                 variables = list(reversed(list(this_thread.current_variable)))
@@ -1101,6 +1103,8 @@ def background_action(yaml_filename, user_info, session_code, secret, url, url_r
                         error_trace = str(e.traceback)
                         if hasattr(e, 'da_line_with_error'):
                             error_trace += "\nIn line: " + str(e.da_line_with_error)
+                        if hasattr(e, 'da_asking_question'):
+                            error_trace += "\nNeeded by question: " + str(e.da_asking_question)
                     else:
                         error_trace = None
                     variables = list(reversed(list(this_thread.current_variable)))
