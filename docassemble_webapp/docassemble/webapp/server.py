@@ -23990,7 +23990,7 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
             html += "\n  </body>\n</html>"
             msg = Message(app.config['APP_NAME'] + " error: " + err.__class__.__name__, recipients=email_recipients, body=body, html=html)
             if json_filename:
-                with open(json_filename, 'r', encoding='utf-8') as fp:
+                with open(json_filename, 'rb') as fp:
                     msg.attach('variables.json', 'application/json', fp.read())
             da_send_mail(msg)
         except BaseException as zerr:
@@ -23999,7 +23999,7 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
             html = "<html>\n  <body>\n    <p>There was an error in the " + app.config['APP_NAME'] + " application.</p>\n  </body>\n</html>"
             msg = Message(app.config['APP_NAME'] + " error: " + err.__class__.__name__, recipients=email_recipients, body=body, html=html)
             if json_filename:
-                with open(json_filename, 'r', encoding='utf-8') as fp:
+                with open(json_filename, 'rb') as fp:
                     msg.attach('variables.json', 'application/json', fp.read())
             da_send_mail(msg)
     except:
