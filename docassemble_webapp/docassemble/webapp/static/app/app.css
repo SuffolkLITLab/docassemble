@@ -248,27 +248,25 @@ div.da-field-container-datatype-range .da-top-label {
   position: relative;
 }
 
-.da-form-group.darequired .dawidecol::before {
+.da-form-group.darequired .dawidecol > .darequiredmarker {
   position: absolute;
-  content: "*";
   color: red;
   top: 0;
   left: -0.2rem;
 }
 
-.da-form-group.darequired .dagridwide::before {
+.da-form-group.darequired .dagridwide > .darequiredmarker {
   position: absolute;
-  content: "*";
   color: red;
   top: 0;
   left: -0.2rem;
 }
 
-[data-bs-theme=dark] .da-form-group.darequired .dawidecol::before {
+[data-bs-theme=dark] .da-form-group.darequired .dawidecol > .darequiredmarker {
   color: var(--bs-red);
 }
 
-[data-bs-theme=dark] .da-form-group.darequired .dagridwide::before {
+[data-bs-theme=dark] .da-form-group.darequired .dagridwide > .darequiredmarker {
   color: var(--bs-red);
 }
 
@@ -314,15 +312,14 @@ div.da-field-container-datatype-range .da-top-label {
   position: relative;
 }
 
-.da-form-group.darequired .danolabel::before {
+.da-form-group.darequired .danolabel > .darequiredmarker {
   position: absolute;
-  content: "*";
   color: red;
   top: 0;
   left: -0.2rem;
 }
 
-[data-bs-theme=dark] .da-form-group.darequired .danolabel::before {
+[data-bs-theme=dark] .da-form-group.darequired .danolabel > .darequiredmarker {
   color: var(--bs-red);
 }
 
@@ -334,13 +331,12 @@ div.da-legend.da-top-label {
   position: relative;
 }
 
-.da-form-group.darequired .da-top-label::after {
-  content: "*";
+.da-form-group.darequired .da-top-label > .darequiredmarker {
   color: red;
   margin-left: 0.2em;
 }
 
-[data-bs-theme=dark] .da-form-group.darequired .da-top-label::after {
+[data-bs-theme=dark] .da-form-group.darequired .da-top-label > .darequiredmarker {
   color: var(--bs-red);
 }
 
@@ -348,24 +344,23 @@ div.da-legend.da-top-label {
   position: relative;
 }
 
-.da-form-group.darequired .da-form-label::after {
+.da-form-group.darequired .da-form-label > .darequiredmarker {
   position: absolute;
-  content: "*";
   color: red;
 }
 
-[data-bs-theme=dark] .da-form-group.darequired .da-form-label::after {
+[data-bs-theme=dark] .da-form-group.darequired .da-form-label > .darequiredmarker {
   color: var(--bs-red);
 }
 
 @media (width <= 767px) {
-  .da-form-group.darequired .dawidecol::before {
+  .da-form-group.darequired .dawidecol > .darequiredmarker {
     left: 0.2rem;
   }
-  .da-form-group.darequired .danolabel::before {
+  .da-form-group.darequired .danolabel > .darequiredmarker {
     left: 0.2rem;
   }
-  .da-form-group.darequired .da-form-label::after {
+  .da-form-group.darequired .da-form-label > .darequiredmarker {
     bottom: 0.7rem;
   }
   .da-grid-container.dayesnospacing + .da-grid-container.dayesnospacing {
@@ -373,12 +368,12 @@ div.da-legend.da-top-label {
   }
 }
 @media (width >= 768px) {
-  .da-form-group.darequired .da-form-label::after {
+  .da-form-group.darequired .da-form-label > .darequiredmarker {
     top: 5px;
     right: 5px;
   }
 }
-.da-form-group.darequired.greyedout .da-form-label::after {
+.da-form-group.darequired.greyedout .da-form-label > .darequiredmarker {
   display: none;
 }
 
@@ -1769,7 +1764,7 @@ tr:last-child .databledown {
   text-align: left !important;
 }
 
-.dawide .da-form-group.darequired .da-form-label::after {
+.dawide .da-form-group.darequired .da-form-label > .darequiredmarker {
   bottom: 0.7rem !important;
   top: auto !important;
   right: auto !important;

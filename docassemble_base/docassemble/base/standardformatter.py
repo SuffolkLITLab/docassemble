@@ -544,6 +544,12 @@ def embed_input(status, variable):
     return 'ERROR: field not found'
 
 
+# The visual asterisk shown on required fields.  It is hidden from screen
+# readers, which would otherwise announce it as "star"; the required state is
+# communicated to assistive technology with aria-required.
+REQUIRED_MARKER = '<span class="darequiredmarker" aria-hidden="true">*</span>'
+
+
 def help_wrap(content, helptext, status):
     if helptext is None:
         return content
@@ -552,6 +558,10 @@ def help_wrap(content, helptext, status):
 
 
 def field_item(field, grid_info, pre=None, row=True, floating=False, classes=None, hidden_message=None, label_for=None, label_classes=None, label_content=None, grid_type=None, content_classes=None, content=None, side_note=None, under_text=None, use_fieldset=0, required=False):
+    if required and classes and 'darequired' in classes:
+        required_marker = REQUIRED_MARKER
+    else:
+        required_marker = ''
     if use_fieldset:
         enclosing_type = 'div'
         label_type = 'div'
@@ -595,6 +605,9 @@ def field_item(field, grid_info, pre=None, row=True, floating=False, classes=Non
                 label_text += ' class="' + (" ".join(all_label_classes)) + '"'
             label_text += '>'
             label_text += label_content
+            if required_marker and len([c for c in all_label_classes if 'da-form-label' in c or 'da-top-label' in c]) > 0:
+                label_text += required_marker
+                required_marker = ''
             label_text += '</' + label_type + '>'
         else:
             if use_fieldset:
@@ -667,6 +680,9 @@ def field_item(field, grid_info, pre=None, row=True, floating=False, classes=Non
             if len(content_styles) > 0:
                 output += ' style="' + (" ".join(k + ': ' + v + ';' for k, v in content_styles.items())) + '"'
             output += '>'
+            if required_marker and len([c for c in all_content_classes if 'dagridwide' in c or 'danolabel' in c]) > 0:
+                output += required_marker
+                required_marker = ''
             if grid_label_above:
                 output += label_text
         if content:
@@ -702,6 +718,9 @@ def field_item(field, grid_info, pre=None, row=True, floating=False, classes=Non
                 label_text += ' class="' + (" ".join(all_label_classes)) + '"'
             label_text += '>'
             label_text += label_content
+            if required_marker and len([c for c in all_label_classes if 'da-form-label' in c or 'da-top-label' in c]) > 0:
+                label_text += required_marker
+                required_marker = ''
             label_text += '</' + label_type + '>'
         else:
             if use_fieldset:
@@ -741,6 +760,9 @@ def field_item(field, grid_info, pre=None, row=True, floating=False, classes=Non
             all_content_classes.append(content_classes)
         if len(all_content_classes) > 0:
             output += '\n                  <div class="' + (" ".join(all_content_classes)) + '" aria-live="polite">'
+            if required_marker and len([c for c in all_content_classes if 'dawidecol' in c or 'danolabel' in c]) > 0:
+                output += required_marker
+                required_marker = ''
         if content:
             output += '\n                  '
             if len(all_content_classes) > 0:
