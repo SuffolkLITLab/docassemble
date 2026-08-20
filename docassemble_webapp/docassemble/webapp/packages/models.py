@@ -20,6 +20,7 @@ class Package(db.Model):
     core = db.Column(db.Boolean(), nullable=False, server_default='0')
     active = db.Column(db.Boolean(), nullable=False, server_default='1')
     gitbranch = db.Column(db.String(255), nullable=True)
+    gitcommit = db.Column(db.String(255), nullable=True)
 
 
 class PackageAuth(db.Model):
@@ -36,4 +37,5 @@ class Install(db.Model):
     hostname = db.Column(db.Text())
     version = db.Column(db.Integer())
     packageversion = db.Column(db.Text())
+    gitcommit = db.Column(db.String(255), nullable=True)
     package_id = db.Column(db.Integer(), db.ForeignKey(dbtableprefix + 'package.id', ondelete='CASCADE'))
