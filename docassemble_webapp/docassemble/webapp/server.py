@@ -2328,6 +2328,13 @@ def copy_playground_modules():
         local_dirs = [(os.path.join(FULL_PACKAGE_DIRECTORY, 'docassemble', 'playground' + str(user_id)), mod_dir.directory)]
         for dirname in mod_dir.list_of_dirs():
             local_dirs.append((os.path.join(FULL_PACKAGE_DIRECTORY, 'docassemble', 'playground' + str(user_id) + dirname), os.path.join(mod_dir.directory, dirname)))
+        
+        # Also ensure empty playground projects are created so importlib.resources can find them
+        playground = SavedFile(user_id, fix=True, section='playground')
+        for dirname in playground.list_of_dirs():
+            if dirname not in mod_dir.list_of_dirs():
+                local_dirs.append((os.path.join(FULL_PACKAGE_DIRECTORY, 'docassemble', 'playground' + str(user_id) + dirname), os.path.join(mod_dir.directory, dirname)))
+
         for local_dir, mod_directory in local_dirs:
             if os.path.isdir(local_dir):
                 try:
@@ -2338,6 +2345,10 @@ def copy_playground_modules():
             # logmessage("Copying " + str(mod_directory) + " to " + str(local_dir))
             for f in [f for f in os.listdir(mod_directory) if re.search(r'^[A-Za-z].*\.py$', f)]:
                 shutil.copyfile(os.path.join(mod_directory, f), os.path.join(local_dir, f))
+    
+    import importlib
+    importlib.invalidate_caches()
+
             # shutil.copytree(mod_dir.directory, local_dir)
             # with open(os.path.join(local_dir, '__init__.py'), 'w', encoding='utf-8') as the_file:
             #     the_file.write(init_py_file)
