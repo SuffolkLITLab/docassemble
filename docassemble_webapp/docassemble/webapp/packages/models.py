@@ -27,6 +27,7 @@ class Package(Base):
     core: Mapped[bool] = mapped_column(Boolean, server_default=false())
     active: Mapped[bool] = mapped_column(Boolean, server_default=true())
     gitbranch: Mapped[Optional[str]] = mapped_column(String(255))
+    gitcommit: Mapped[Optional[str]] = mapped_column(String(255))
 
 
 class PackageAuth(Base):
@@ -49,6 +50,7 @@ class Install(Base):
     hostname: Mapped[Optional[str]] = mapped_column(Text)
     version: Mapped[Optional[int]] = mapped_column(Integer)
     packageversion: Mapped[Optional[str]] = mapped_column(Text)
+    gitcommit: Mapped[Optional[str]] = mapped_column(String(255))
     package_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey(dbtableprefix + "package.id", ondelete="CASCADE"),
