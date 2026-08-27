@@ -8,6 +8,8 @@ import re
 # from io import StringIO
 import shutil
 import time
+import json
+import importlib.metadata
 import fcntl  # pylint: disable=import-error
 from packaging import version
 import docassemble.base.config
@@ -412,6 +414,22 @@ def check_for_updates(start_time=None, invalidate_cache=True, full=True):
     return ok, logmessages, results
 
 
+def get_git_commit(package_name):
+    """Return git commit SHA that pip recorded when it installed this package from a VCS URL (git+https://github.com/..), or None if
+    the package was not installed from git. Reads pip's own direct_url.json metadata file (PEP 610), so it has exactly what pip actually resolved and
+    installed"""
+    try:
+        raw = importlib.metadata.distribution(package_name).read_text('direct_url.json')
+    except importlib.metadata.PackageNotFoundError:
+        return None
+    if not raw:
+        return None
+    vcs_info = json.loads(raw).get('vcs_info')
+    if vcs_info and vcs_info.get('vcs') == 'git':
+        return vcs_info.get('commit_id')
+    return None
+
+
 def update_versions(start_time=None):
     if start_time is None:
         start_time = time.time()
@@ -428,16 +446,26 @@ def update_versions(start_time=None):
     for package in db.session.execute(select(Package).filter_by(active=True).order_by(Package.name, Package.id.desc())).scalars():
         if package.name in package_by_name:
             continue
-        package_by_name[package.name] = Object(id=package.id, packageversion=package.packageversion, name=package.name)
+        package_by_name[package.name] = Object(id=package.id, packageversion=package.packageversion, gitcommit=package.gitcommit, name=package.name)
     installed_packages = get_installed_distributions(start_time=start_time)
     for package in installed_packages:
         if package.key in package_by_name:
-            if package_by_name[package.key].id in install_by_id and package.version != install_by_id[package_by_name[package.key].id].packageversion:
-                for install_row in db.session.execute(select(Install).filter_by(hostname=hostname, package_id=package_by_name[package.key].id)).scalars():
-                    install_row.packageversion = package.version
-            if package.version != package_by_name[package.key].packageversion:
+            # git commit is a separate signal from the version string: a package can get a new commit without its version being bumped,
+            # so this is diffed independently rather than folded into the version check below
+            commit = get_git_commit(package.key)
+            if package_by_name[package.key].id in install_by_id:
+                install_row_stale = (
+                    package.version != install_by_id[package_by_name[package.key].id].packageversion
+                    or commit != install_by_id[package_by_name[package.key].id].gitcommit
+                )
+                if install_row_stale:
+                    for install_row in db.session.execute(select(Install).filter_by(hostname=hostname, package_id=package_by_name[package.key].id)).scalars():
+                        install_row.packageversion = package.version
+                        install_row.gitcommit = commit
+            if package.version != package_by_name[package.key].packageversion or commit != package_by_name[package.key].gitcommit:
                 for package_row in db.session.execute(select(Package).filter_by(active=True, name=package_by_name[package.key].name).with_for_update()).scalars():
                     package_row.packageversion = package.version
+                    package_row.gitcommit = commit
     db.session.commit()
     logmessage("update_versions: ended after " + str(time.time() - start_time))
 
