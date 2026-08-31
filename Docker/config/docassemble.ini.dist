@@ -13,3 +13,4 @@ buffer-size = 32768
 touch-reload = {{DA_ROOT}}/webapp/docassemble.wsgi
 py-executable = {{DA_PYTHON}}/bin/python
 max-fd = 1048576
+logformat = %(addr) - %(user) [%(ltime)] "%(method) %(uri) %(proto)" %(status) %(size) rid=%(var.HTTP_X_REQUEST_ID)

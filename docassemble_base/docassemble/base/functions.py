@@ -2721,6 +2721,7 @@ def background_action(*pargs, **kwargs):
 #         get_server_redis().rpush(worker_key, result.obj.id)
 #     # logmessage("worker_caller: id is " + str(result.obj.id))
 #     return result
+ 
 
 # def null_chat_partners(*pargs, **kwargs):
 #     return dict(peer=0, help=0)

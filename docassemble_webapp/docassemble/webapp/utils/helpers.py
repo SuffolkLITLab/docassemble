@@ -2405,6 +2405,7 @@ def current_info(yaml=None, req=None, action=None, location=None, interface='web
             if session_uid == '':
                 session_uid = current_app.session_interface.manual_save_session(current_app, session).decode()[5:15]
         # logmessage("unique id is " + session_uid)
+    requestid = headers.get('X-Request-Id')
     if device_id is None:
         device_id = random_string(16)
     if secret is not None:
@@ -2417,7 +2418,7 @@ def current_info(yaml=None, req=None, action=None, location=None, interface='web
     else:
         user_code = None
         encrypted = True
-    return_val = {'session': user_code, 'secret': secret, 'yaml_filename': yaml, 'interface': interface, 'url': url, 'url_root': url_root, 'encrypted': encrypted, 'user': {'is_anonymous': bool(current_user.is_anonymous), 'is_authenticated': bool(current_user.is_authenticated), 'session_uid': session_uid, 'device_id': device_id}, 'headers': headers, 'clientip': clientip, 'method': method}
+    return_val = {'session': user_code, 'secret': secret, 'yaml_filename': yaml, 'interface': interface, 'url': url, 'url_root': url_root, 'encrypted': encrypted, 'requestid': requestid, 'user': {'is_anonymous': bool(current_user.is_anonymous), 'is_authenticated': bool(current_user.is_authenticated), 'session_uid': session_uid, 'device_id': device_id}, 'headers': headers, 'clientip': clientip, 'method': method}
     if action is not None:
         # logmessage("current_info: setting an action " + repr(action))
         return_val.update(action)

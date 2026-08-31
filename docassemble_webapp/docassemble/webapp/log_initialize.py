@@ -28,7 +28,7 @@ def syslog_message(message):
             else:
                 the_user = "anonymous"
             the_current_info = getattr(this_thread, 'current_info', {})
-            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': get_requester_ip(request), 'yamlfile': the_current_info.get('yaml_filename', 'na'), 'user': the_user, 'session': the_current_info.get('session', 'na')})
+            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': get_requester_ip(request), 'yamlfile': the_current_info.get('yaml_filename', 'na'), 'user': the_user, 'session': the_current_info.get('session', 'na'), 'requestid': the_current_info.get('requestid', 'na')})
         except BaseException as err:
             sys.stderr.write("Error writing log message " + str(message) + "\n")
             try:
@@ -37,7 +37,8 @@ def syslog_message(message):
                 pass
     else:
         try:
-            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': 'localhost', 'yamlfile': 'na', 'user': 'na', 'session': 'na'})
+            the_current_info = getattr(this_thread, 'current_info', {})
+            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': 'localhost', 'yamlfile': 'na', 'user': 'na', 'session': 'na', 'requestid': the_current_info.get('requestid', 'na')})
         except BaseException as err:
             sys.stderr.write("Error writing log message " + str(message) + "\n")
             try:
@@ -49,7 +50,7 @@ def syslog_message(message):
 def syslog_message_with_timestamp(message):
     syslog_message(time.strftime("%Y-%m-%d %H:%M:%S") + " " + message)
 
-LOGFORMAT = daconfig.get('log format', 'docassemble: ip=%(clientip)s i=%(yamlfile)s uid=%(session)s user=%(user)s %(message)s')
+LOGFORMAT = daconfig.get('log format', 'docassemble: ip=%(clientip)s i=%(yamlfile)s uid=%(session)s user=%(user)s rid=%(requestid)s %(message)s')
 
 
 class UnsilenceableLogger(logging.Logger):

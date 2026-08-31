@@ -54,7 +54,7 @@ class MyAsyncResult:
 
 def bg_action(action, ui_notification, **kwargs):
     result = MyAsyncResult()
-    result.obj = get_celery_app().signature('tasks.background_action', args=[this_thread.current_info['yaml_filename'], this_thread.current_info['user'], this_thread.current_info['session'], this_thread.current_info['secret'], this_thread.current_info['url'], this_thread.current_info['url_root'], {'action': action, 'arguments': kwargs}], kwargs={"extra": ui_notification}).delay()
+    result.obj = get_celery_app().signature('tasks.background_action', args=[this_thread.current_info['yaml_filename'], this_thread.current_info['user'], this_thread.current_info['session'], this_thread.current_info['secret'], this_thread.current_info['url'], this_thread.current_info['url_root'], {'action': action, 'arguments': kwargs}], kwargs={"extra": ui_notification, "requestid": this_thread.current_info.get('requestid')}).delay()
     if ui_notification is not None:
         worker_key = 'da:worker:uid:' + str(this_thread.current_info['session']) + ':i:' + str(this_thread.current_info['yaml_filename']) + ':userid:' + str(this_thread.current_info['user']['the_user_id'])
         # logmessage("worker_caller: id is " + str(result.obj.id) + " and key is " + worker_key)
