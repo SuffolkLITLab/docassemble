@@ -23906,10 +23906,12 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
     session_id = None
     real_url = None
     temp_user_id = None
+    request_id = None
     try:
         current_info = docassemble.base.functions.this_thread.current_info
         session_id = current_info.get('session')
         real_url = current_info.get('url')
+        request_id = current_info.get('requestid')
         user_info_dict = current_info.get('user') or {}
         if str(user_info_dict.get('the_user_id', '')).startswith('t'):
             temp_user_id = user_info_dict.get('theid')
@@ -23971,6 +23973,9 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
             if session_id is not None:
                 body += "\n\nThe session ID was " + str(session_id)
                 html += "<p>The session ID was " + str(session_id) + "</p>"
+            if request_id is not None:
+                body += "\n\nThe request ID was " + str(request_id)
+                html += "<p>The request ID was " + str(request_id) + "</p>"
             if real_url is not None:
                 body += "\n\nThe URL was " + str(real_url)
                 html += "<p>The URL was " + str(real_url) + "</p>"
