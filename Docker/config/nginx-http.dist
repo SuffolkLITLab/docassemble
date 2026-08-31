@@ -11,6 +11,7 @@ server {
     location {{DAWSGIROOT}} { try_files $uri @docassemble; }
     location @docassemble {
         include uwsgi_params;
+        uwsgi_param HTTP_X_REQUEST_ID $request_id;
         uwsgi_pass unix:///var/run/uwsgi/docassemble.sock;
     }
 

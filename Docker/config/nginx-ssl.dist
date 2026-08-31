@@ -18,6 +18,7 @@ server {
           return 301 https://{{DAHOSTNAME}}$request_uri;
         }
         include uwsgi_params;
+        uwsgi_param HTTP_X_REQUEST_ID $request_id;
         uwsgi_pass unix:///var/run/uwsgi/docassemble.sock;
     }
 
