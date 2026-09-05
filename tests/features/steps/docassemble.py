@@ -7,6 +7,7 @@ from random import randint, random
 from behave import step, use_step_matcher  # pylint: disable=import-error,no-name-in-module
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
@@ -128,6 +129,13 @@ def wait_forever(context):
 def launch_interview(context, interview_name):
     context.browser.get(context.da_path + "/interview?i=" + interview_name + '&reset=2')
     time.sleep(1)
+
+
+@step(r'I visit the page "(?P<path>[^"]+)"')
+def visit_page(context, path):
+    do_wait(context)
+    context.browser.get(context.da_path + path)
+    context.browser.wait_for_it()
 
 
 @step(r'I start the interview "(?P<interview_name>[^"]+)"')
@@ -613,10 +621,78 @@ def change_window_size(context, xdimen, ydimen):
 
 @step(r'I unfocus')
 def unfocus(context):
-    elem = WebDriverWait(context.browser, 10).until(
-        EC.element_to_be_clickable((By.ID, 'daMainQuestion'))
-    )
     context.browser.execute_script("document.activeElement.blur();")
+
+
+@step(r'I set the fixed header height to (?P<height>[0-9]+) pixels')
+def set_fixed_header_height(context, height):
+    header = context.browser.find_element(By.CSS_SELECTOR, '.navbar.fixed-top')
+    context.browser.execute_script(
+        "arguments[0].style.height = arguments[1] + 'px';",
+        header,
+        height,
+    )
+
+
+@step(r'I focus the (?P<page_type>interview|site) skip link')
+def focus_skip_link(context, page_type):
+    target = "#daquestion" if page_type == "interview" else "#damain"
+    skip_link = context.browser.find_element(By.CSS_SELECTOR, f'a[href="{target}"]')
+    assert skip_link.get_attribute("tabindex") == "0"
+    context.browser.execute_script("arguments[0].focus();", skip_link)
+
+
+@step(r'the (?P<page_type>interview|site) skip link should be unobscured')
+def skip_link_is_unobscured(context, page_type):
+    target = "#daquestion" if page_type == "interview" else "#damain"
+    skip_link = context.browser.find_element(By.CSS_SELECTOR, f'a[href="{target}"]')
+    result = context.browser.execute_script(
+        """
+        const link = arguments[0];
+        const rect = link.getBoundingClientRect();
+        const points = [
+          [rect.left + rect.width / 2, rect.top + rect.height / 2],
+          [rect.left + rect.width * 0.25, rect.top + rect.height / 2],
+          [rect.left + rect.width * 0.75, rect.top + rect.height / 2],
+        ];
+        const inViewport = rect.width > 0 && rect.height > 0 &&
+          rect.top >= 0 && rect.left >= 0 &&
+          rect.bottom <= window.innerHeight && rect.right <= window.innerWidth;
+        const unobscured = points.every(([x, y]) => {
+          const topElement = document.elementFromPoint(x, y);
+          return topElement === link || link.contains(topElement);
+        });
+        return {inViewport, unobscured, rect};
+        """,
+        skip_link,
+    )
+    assert result["inViewport"], f"Skip link is not in the viewport: {result['rect']}"
+    assert result["unobscured"], f"Skip link is obscured: {result['rect']}"
+
+
+@step(r'the (?P<page_type>interview|site) skip link should have focus')
+def skip_link_has_focus(context, page_type):
+    target = "#daquestion" if page_type == "interview" else "#damain"
+
+    def active_skip_link(browser):
+        active_element = browser.switch_to.active_element
+        href = active_element.get_attribute("href")
+        return active_element if href and href.endswith(target) else False
+
+    WebDriverWait(context.browser, 10).until(active_skip_link)
+
+
+@step(r'I activate the focused link')
+def activate_focused_link(context):
+    context.browser.switch_to.active_element.send_keys(Keys.ENTER)
+
+
+@step(r'the (?P<page_type>interview|site) main content should have focus')
+def main_content_has_focus(context, page_type):
+    target = "daquestion" if page_type == "interview" else "damain"
+    WebDriverWait(context.browser, 10).until(
+        lambda browser: browser.switch_to.active_element.get_attribute("id") == target
+    )
 
 
 @step(r'I click the final link "(?P<link_name>[^"]+)"')
