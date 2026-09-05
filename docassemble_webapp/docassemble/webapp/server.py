@@ -1367,7 +1367,7 @@ def syslog_message(message):
             else:
                 the_user = "anonymous"
             the_current_info = getattr(docassemble.base.functions.this_thread, 'current_info', {})
-            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': get_requester_ip(request), 'yamlfile': the_current_info.get('yaml_filename', 'na'), 'user': the_user, 'session': the_current_info.get('session', 'na')})
+            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': get_requester_ip(request), 'yamlfile': the_current_info.get('yaml_filename', 'na'), 'user': the_user, 'session': the_current_info.get('session', 'na'), 'requestid': the_current_info.get('requestid', 'na')})
         except BaseException as err:
             sys.stderr.write("Error writing log message " + str(message) + "\n")
             try:
@@ -1376,7 +1376,8 @@ def syslog_message(message):
                 pass
     else:
         try:
-            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': 'localhost', 'yamlfile': 'na', 'user': 'na', 'session': 'na'})
+            the_current_info = getattr(docassemble.base.functions.this_thread, 'current_info', {})
+            sys_logger.debug('%s', LOGFORMAT % {'message': message, 'clientip': 'localhost', 'yamlfile': the_current_info.get('yaml_filename', 'na'), 'user': 'na', 'session': the_current_info.get('session', 'na'), 'requestid': the_current_info.get('requestid', 'na')})
         except BaseException as err:
             sys.stderr.write("Error writing log message " + str(message) + "\n")
             try:
@@ -1388,7 +1389,7 @@ def syslog_message(message):
 def syslog_message_with_timestamp(message):
     syslog_message(time.strftime("%Y-%m-%d %H:%M:%S") + " " + message)
 
-LOGFORMAT = daconfig.get('log format', 'docassemble: ip=%(clientip)s i=%(yamlfile)s uid=%(session)s user=%(user)s %(message)s')
+LOGFORMAT = daconfig.get('log format', 'docassemble: ip=%(clientip)s i=%(yamlfile)s uid=%(session)s user=%(user)s rid=%(requestid)s %(message)s')
 
 
 class UnsilenceableLogger(logging.Logger):
@@ -4677,6 +4678,7 @@ def current_info(yaml=None, req=None, action=None, location=None, interface='web
             if session_uid == '':
                 session_uid = app.session_interface.manual_save_session(app, session).decode()[5:15]
         # logmessage("unique id is " + session_uid)
+    requestid = headers.get('X-Request-Id')
     if device_id is None:
         device_id = random_string(16)
     if secret is not None:
@@ -4689,7 +4691,7 @@ def current_info(yaml=None, req=None, action=None, location=None, interface='web
     else:
         user_code = None
         encrypted = True
-    return_val = {'session': user_code, 'secret': secret, 'yaml_filename': yaml, 'interface': interface, 'url': url, 'url_root': url_root, 'encrypted': encrypted, 'user': {'is_anonymous': bool(current_user.is_anonymous), 'is_authenticated': bool(current_user.is_authenticated), 'session_uid': session_uid, 'device_id': device_id}, 'headers': headers, 'clientip': clientip, 'method': method}
+    return_val = {'session': user_code, 'secret': secret, 'yaml_filename': yaml, 'interface': interface, 'url': url, 'url_root': url_root, 'encrypted': encrypted, 'requestid': requestid, 'user': {'is_anonymous': bool(current_user.is_anonymous), 'is_authenticated': bool(current_user.is_authenticated), 'session_uid': session_uid, 'device_id': device_id}, 'headers': headers, 'clientip': clientip, 'method': method}
     if action is not None:
         # logmessage("current_info: setting an action " + repr(action))
         return_val.update(action)
@@ -23905,10 +23907,12 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
     session_id = None
     real_url = None
     temp_user_id = None
+    request_id = None
     try:
         current_info = docassemble.base.functions.this_thread.current_info
         session_id = current_info.get('session')
         real_url = current_info.get('url')
+        request_id = current_info.get('requestid')
         user_info_dict = current_info.get('user') or {}
         if str(user_info_dict.get('the_user_id', '')).startswith('t'):
             temp_user_id = user_info_dict.get('theid')
@@ -23970,6 +23974,9 @@ def error_notification(err, message=None, history=None, trace=None, referer=None
             if session_id is not None:
                 body += "\n\nThe session ID was " + str(session_id)
                 html += "<p>The session ID was " + str(session_id) + "</p>"
+            if request_id is not None:
+                body += "\n\nThe request ID was " + str(request_id)
+                html += "<p>The request ID was " + str(request_id) + "</p>"
             if real_url is not None:
                 body += "\n\nThe URL was " + str(real_url)
                 html += "<p>The URL was " + str(real_url) + "</p>"

@@ -1048,7 +1048,7 @@ def email_attachments(user_code, email_address, attachment_info, language, subje
 
 
 @workerapp.task
-def background_action(yaml_filename, user_info, session_code, secret, url, url_root, action, extra=None):
+def background_action(yaml_filename, user_info, session_code, secret, url, url_root, action, extra=None, requestid=None):
     if url_root is None:
         url_root = daconfig.get('url root', 'http://localhost') + daconfig.get('root', '/')
     if url is None:
@@ -1063,12 +1063,16 @@ def background_action(yaml_filename, user_info, session_code, secret, url, url_r
                 user_object = worker_controller.get_user_object(user_info['theid'])
                 worker_controller.login_user(user_object, remember=False)
                 worker_controller.update_last_login(user_object)
-            logmessage("background_action: yaml_filename is " + str(yaml_filename) + " and session code is " + str(session_code) + " and action is " + repr(action))
+            if str(user_info.get('the_user_id', '')).startswith('t'):
+                user_identifier = "temp user " + str(user_info.get('theid'))
+            else:
+                user_identifier = "user " + str(user_info.get('theid'))
+            logmessage("background_action: yaml_filename is " + str(yaml_filename) + " and session code is " + str(session_code) + " and " + user_identifier + " and action is " + repr(action))
             worker_controller.set_request_active(False)
             if action['action'] == 'incoming_email':
                 if 'id' in action['arguments']:
                     action['arguments'] = {'email': worker_controller.retrieve_email(action['arguments']['id'])}
-            the_current_info = {'user': user_info, 'session': session_code, 'secret': secret, 'yaml_filename': yaml_filename, 'url': url, 'url_root': url_root, 'encrypted': True, 'action': action['action'], 'interface': 'worker', 'arguments': action['arguments']}
+            the_current_info = {'user': user_info, 'session': session_code, 'secret': secret, 'yaml_filename': yaml_filename, 'url': url, 'url_root': url_root, 'encrypted': True, 'action': action['action'], 'interface': 'worker', 'arguments': action['arguments'], 'requestid': requestid}
             worker_controller.functions.this_thread.current_info = the_current_info
             interview = worker_controller.interview_cache.get_interview(yaml_filename)
             worker_controller.obtain_lock_patiently(session_code, yaml_filename)
@@ -1141,7 +1145,7 @@ def background_action(yaml_filename, user_info, session_code, secret, url, url_r
                 start_time = time.time()
                 new_action = interview_status.question.action
                 # logmessage("new action is " + repr(new_action))
-                the_current_info = {'user': user_info, 'session': session_code, 'secret': secret, 'yaml_filename': yaml_filename, 'url': url, 'url_root': url_root, 'encrypted': True, 'interface': 'worker', 'action': new_action['action'], 'arguments': new_action['arguments']}
+                the_current_info = {'user': user_info, 'session': session_code, 'secret': secret, 'yaml_filename': yaml_filename, 'url': url, 'url_root': url_root, 'encrypted': True, 'interface': 'worker', 'action': new_action['action'], 'arguments': new_action['arguments'], 'requestid': requestid}
                 worker_controller.functions.this_thread.current_info = the_current_info
                 worker_controller.obtain_lock_patiently(session_code, yaml_filename)
                 steps, user_dict, is_encrypted = worker_controller.fetch_user_dict(session_code, yaml_filename, secret=secret)

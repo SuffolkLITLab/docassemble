@@ -2305,7 +2305,7 @@ class MyAsyncResult:
 def worker_caller(func, ui_notification, action):
     # logmessage("Got to worker_caller in functions")
     result = MyAsyncResult()
-    result.obj = func.delay(this_thread.current_info['yaml_filename'], this_thread.current_info['user'], this_thread.current_info['session'], this_thread.current_info['secret'], this_thread.current_info['url'], this_thread.current_info['url_root'], action, extra=ui_notification)
+    result.obj = func.delay(this_thread.current_info['yaml_filename'], this_thread.current_info['user'], this_thread.current_info['session'], this_thread.current_info['secret'], this_thread.current_info['url'], this_thread.current_info['url_root'], action, extra=ui_notification, requestid=this_thread.current_info.get('requestid'))
     if ui_notification is not None:
         worker_key = 'da:worker:uid:' + str(this_thread.current_info['session']) + ':i:' + str(this_thread.current_info['yaml_filename']) + ':userid:' + str(this_thread.current_info['user']['the_user_id'])
         # logmessage("worker_caller: id is " + str(result.obj.id) + " and key is " + worker_key)
