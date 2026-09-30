@@ -17393,6 +17393,12 @@ def interview_list():
             next_page = 'interview_list'
         if next_page not in ('interview_list', 'interviews'):
             return redirect(get_url_from_file_reference(next_page))
+    if daconfig.get('session list endpoint', None) is not None and not is_json:
+        target_endpoint = daconfig.get('session list endpoint')
+        if target_endpoint in app.view_functions:
+            return redirect(url_for(target_endpoint))
+        else:
+            logmessage("interview_list: session list endpoint '" + str(target_endpoint) + "' is not a registered endpoint, ignoring")
     if daconfig.get('session list interview', None) is not None:
         if is_json:
             return redirect(url_for('index', i=daconfig.get('session list interview'), from_list='1', json='1'))
