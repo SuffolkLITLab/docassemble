@@ -56,7 +56,7 @@ bash -c \
 && cp /tmp/docassemble/Docker/nascent.html /var/www/nascent/index.html \
 && update-exim4.conf \
 && chown -R www-data:www-data \
-   /usr/share/docassemble/local3.12 \
+   /usr/share/docassemble/local3.14 \
    /usr/share/docassemble/log \
    /usr/share/docassemble/files \
 && chmod ogu+r /usr/share/docassemble/config/config.yml.dist \
@@ -70,7 +70,7 @@ bash -c \
 USER www-data
 RUN bash -c \
 "python3 -m venv --copies /usr/share/docassemble/local3.14 \
-&& source /usr/share/docassemble/local3.12/bin/activate \
+&& source /usr/share/docassemble/local3.14/bin/activate \
 && pip install --upgrade pip==26.0.1 \
 && pip install --upgrade mod_wsgi==5.0.2 \
 && pip install --upgrade \
@@ -94,9 +94,9 @@ RUN bash -c \
 && ln -s /usr/share/docassemble/cron/exim4-base /etc/cron.daily/exim4-base \
 && mv /etc/syslog-ng/syslog-ng.conf /usr/share/docassemble/syslogng/syslog-ng.conf \
 && ln -s /usr/share/docassemble/syslogng/syslog-ng.conf /etc/syslog-ng/syslog-ng.conf \
-&& { if [[ '$(dpkg --print-architecture)' == 'amd64' ]]; then cp /usr/share/docassemble/local3.12/lib/python3.12/site-packages/mod_wsgi/server/mod_wsgi-py312.cpython-312-x86_64-linux-gnu.so /usr/lib/apache2/modules/mod_wsgi.so-3.12; else cp /usr/share/docassemble/local3.12/lib/python3.12/site-packages/mod_wsgi/server/mod_wsgi-py312.cpython-312-aarch64-linux-gnu.so /usr/lib/apache2/modules/mod_wsgi.so-3.12; fi; } \
+&& { if [[ '$(dpkg --print-architecture)' == 'amd64' ]]; then cp /usr/share/docassemble/local3.14/lib/python3.14/site-packages/mod_wsgi/server/mod_wsgi-py314.cpython-314-x86_64-linux-gnu.so /usr/lib/apache2/modules/mod_wsgi.so-3.14; else cp /usr/share/docassemble/local3.14/lib/python3.14/site-packages/mod_wsgi/server/mod_wsgi-py314.cpython-314-aarch64-linux-gnu.so /usr/lib/apache2/modules/mod_wsgi.so-3.14; fi; } \
 && rm -f /usr/lib/apache2/modules/mod_wsgi.so \
-&& ln -s /usr/lib/apache2/modules/mod_wsgi.so-3.12 /usr/lib/apache2/modules/mod_wsgi.so \
+&& ln -s /usr/lib/apache2/modules/mod_wsgi.so-3.14 /usr/lib/apache2/modules/mod_wsgi.so \
 && rm -f /etc/cron.daily/apt-compat \
 && sed -i -e 's/^\(daemonize\s*\)yes\s*$/\1no/g' -e 's/^bind 127.0.0.1/bind 0.0.0.0/g' /etc/redis/redis.conf \
 && sed -i -e 's/#APACHE_ULIMIT_MAX_FILES/APACHE_ULIMIT_MAX_FILES/' -e 's/ulimit -n 65536/ulimit -n 8192/' /etc/apache2/envvars \
@@ -224,16 +224,12 @@ RUN bash -c \
 
 USER www-data
 RUN bash -c \
-"source /usr/share/docassemble/local3.12/bin/activate \
-&& python /tmp/docassemble/Docker/nltkdownload.py \
-&& cd /var/www/nltk_data/corpora \
-&& unzip -o wordnet.zip \
-&& unzip -o omw-1.4.zip \
+"source /usr/share/docassemble/local3.14/bin/activate \
 && cd /tmp \
 && mkdir -p /tmp/conv \
-&& pandoc --pdf-engine=lualatex -M latextmpdir=./conv -M pdfa=false /usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/Legal-Template.yml --template=/usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/Legal-Template.tex --from=markdown+raw_tex-latex_macros -s -o /tmp/temp.pdf /usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/hello.md \
+&& pandoc --pdf-engine=lualatex -M latextmpdir=./conv -M pdfa=false /usr/share/docassemble/local3.14/lib/python3.14/site-packages/docassemble/base/data/templates/Legal-Template.yml --template=/usr/share/docassemble/local3.14/lib/python3.14/site-packages/docassemble/base/data/templates/Legal-Template.tex --from=markdown+raw_tex-latex_macros -s -o /tmp/temp.pdf /usr/share/docassemble/local3.14/lib/python3.14/site-packages/docassemble/base/data/templates/hello.md \
 && rm /tmp/temp.pdf \
-&& pandoc --pdf-engine=lualatex -M latextmpdir=./conv -M pdfa=false --template=/usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/Legal-Template.rtf -s -o /tmp/temp.rtf /usr/share/docassemble/local3.12/lib/python3.12/site-packages/docassemble/base/data/templates/hello.md \
+&& pandoc --pdf-engine=lualatex -M latextmpdir=./conv -M pdfa=false --template=/usr/share/docassemble/local3.14/lib/python3.14/site-packages/docassemble/base/data/templates/Legal-Template.rtf -s -o /tmp/temp.rtf /usr/share/docassemble/local3.14/lib/python3.14/site-packages/docassemble/base/data/templates/hello.md \
 && rm /tmp/temp.rtf"
 
 USER root
