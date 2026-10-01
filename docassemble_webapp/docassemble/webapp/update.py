@@ -449,11 +449,6 @@ def update_versions(session, start_time=None):
     installed_packages = get_installed_distributions(start_time=start_time)
     for package in installed_packages:
         if package.key in package_by_name:
-            if package_by_name[package.key].id in install_by_id and package.version != install_by_id[package_by_name[package.key].id].packageversion:
-                for install_row in session.execute(select(Install).filter_by(hostname=hostname, package_id=package_by_name[package.key].id)).scalars():
-                    install_row.packageversion = package.version
-            if package.version != package_by_name[package.key].packageversion:
-                for package_row in session.execute(select(Package).filter_by(active=True, name=package_by_name[package.key].name)).scalars():
             # git commit is a separate signal from the version string: a package can get a new commit without its version being bumped,
             # so this is diffed independently rather than folded into the version check below
             commit = get_git_commit(package.key)
@@ -463,12 +458,13 @@ def update_versions(session, start_time=None):
                     or commit != install_by_id[package_by_name[package.key].id].gitcommit
                 )
                 if install_row_stale:
-                    for install_row in db.session.execute(select(Install).filter_by(hostname=hostname, package_id=package_by_name[package.key].id)).scalars():
+                    for install_row in session.execute(select(Install).filter_by(hostname=hostname, package_id=package_by_name[package.key].id)).scalars():
                         install_row.packageversion = package.version
                         install_row.gitcommit = commit
             if package.version != package_by_name[package.key].packageversion or commit != package_by_name[package.key].gitcommit:
-                for package_row in db.session.execute(select(Package).filter_by(active=True, name=package_by_name[package.key].name).with_for_update()).scalars():
+                for package_row in session.execute(select(Package).filter_by(active=True, name=package_by_name[package.key].name).with_for_update()).scalars():
                     package_row.packageversion = package.version
+                    package_row.gitcommit = commit
     session.flush()
     logmessage("update_versions: ended after " + str(time.time() - start_time))
 
