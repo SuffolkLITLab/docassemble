@@ -980,7 +980,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
         if status.pre:
             output += '                <div class="d-none d-sm-block da-d-sm-block">' + markdown_to_html(status.pre, trim=False, status=status) + '</div>\n'
         if status.questionText:
-            output += '                <div class="da-page-header d-none d-sm-block da-d-sm-block"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+            output += '                <div class="da-page-header d-none d-sm-block da-d-sm-block"><h1 class="h3" id="daMainQuestion" tabindex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         output += '              </div>'
         if status.subquestionText:
             output += '                <div id="dasigmidpart" class="dasigmidpart da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
@@ -1015,7 +1015,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
         datatypes[status.question.fields[0].saveas] = status.question.fields[0].datatype
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" method="POST" class="daformyesno">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:
@@ -1043,7 +1043,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
         datatypes[status.question.fields[0].saveas] = status.question.fields[0].datatype
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" method="POST" class="daformnoyes">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:
@@ -1160,7 +1160,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
                         fieldlist.append('                <div class="row da-review da-review-help"><div class="col">' + markdown_to_html(status.helptexts[field.number], status=status, strip_newlines=True) + '</div></div>\n')
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" class="form-horizontal daformreview" method="POST">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:
@@ -1876,7 +1876,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
                 fieldlist.append('                </div>\n')
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" class="form-horizontal daformfields" method="POST"' + enctype_string + autofill + '>\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + sub_question_text
             output += '                </div>\n'
@@ -1934,7 +1934,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
         datatypes[status.question.fields[0].saveas] = "boolean"
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" method="POST" class="daformcontinue">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:
@@ -1965,7 +1965,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
             datatypes[status.question.fields[0].saveas] = status.question.fields[0].datatype
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" method="POST" class="daformmultiplechoice">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:
@@ -2245,7 +2245,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
         output += '            </form>\n'
     elif status.question.question_type == 'deadend':
         output += status.pre
-        output += indent_by(audio_text, 12) + '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += indent_by(audio_text, 12) + '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:
@@ -2263,7 +2263,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
             output += '            </form>\n'
     elif status.question.question_type == 'wait':
         output += '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" class="form-horizontal daformcontinueother" method="POST">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + markdown_to_html(status.questionText or word("Please wait . . ."), trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + markdown_to_html(status.questionText or word("Please wait . . ."), trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if showUnderText:
@@ -2274,7 +2274,7 @@ def as_html(status, debug, root, validation_rules, field_error, the_progress_bar
     else:
         output += status.pre
         output += indent_by(audio_text, 12) + '            <form aria-labelledby="daMainQuestion" action="' + root + '" id="daform" class="form-horizontal daformcontinueother" method="POST">\n'
-        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
+        output += '                <div class="da-page-header"><h1 class="h3" id="daMainQuestion" tabIndex="-1">' + decoration_text + markdown_to_html(status.questionText, trim=True, status=status, strip_newlines=True) + '</h1><div class="daclear"></div></div>\n'
         if status.subquestionText:
             output += '                <div class="da-subquestion">\n' + markdown_to_html(status.subquestionText, status=status) + '                </div>\n'
         if video_text:

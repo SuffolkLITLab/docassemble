@@ -34456,6 +34456,30 @@ function camelToUnderscore(camelStr) {
     .replace(/^_/, "");
 }
 
+function daFocusMainQuestion() {
+  var mainQuestion = document.getElementById("daMainQuestion");
+  if (mainQuestion) {
+    if (isAndroid) {
+      mainQuestion.focus();
+    } else {
+      mainQuestion.focus({ preventScroll: true, focusVisible: false});
+    }
+    return;
+  }
+  var target = $(daTargetDiv)[0];
+  if (target) {
+    if (!target.hasAttribute("tabindex")) {
+      target.setAttribute("tabindex", "-1");
+    }
+    $(target).addClass("da-no-outline");
+    if (isAndroid) {
+      target.focus();
+    } else {
+      target.focus({ preventScroll: true, focusVisible: false });
+    }
+  }
+}
+ 
 function daInitialize(doScroll) {
   if (!daObserverMode) {
     daResetCheckinCode();
@@ -35290,54 +35314,8 @@ function daInitialize(doScroll) {
         });
       }
     });
-    $("body").focus();
-    if (!daJsEmbed && !isAndroid) {
-      setTimeout(function () {
-        var firstInput = $("#daform .da-field-container")
-          .not(".da-field-container-note")
-          .first()
-          .find("input, textarea, select")
-          .filter(":visible")
-          .first();
-        if (firstInput.length > 0 && $(firstInput).visible()) {
-          $(firstInput).focus();
-          var inputType = $(firstInput).attr("type");
-          if (
-            $(firstInput).prop("tagName") != "SELECT" &&
-            inputType != "checkbox" &&
-            inputType != "radio" &&
-            inputType != "hidden" &&
-            inputType != "submit" &&
-            inputType != "file" &&
-            inputType != "range" &&
-            inputType != "number" &&
-            inputType != "date" &&
-            inputType != "time"
-          ) {
-            var strLength = $(firstInput).val().length * 2;
-            if (strLength > 0) {
-              try {
-                $(firstInput)[0].setSelectionRange(strLength, strLength);
-              } catch (err) {
-                console.log(err.message);
-              }
-            }
-          }
-          var questionTitle = $("#daMainQuestion, #dasigtitle")
-            .filter(":visible")
-            .first();
-          if (questionTitle.length > 0 && $(questionTitle).visible()) {
-            $(questionTitle).attr("tabindex", "-1").focus();
-          } else {
-            var firstButton = $("#danavbar-collapse .nav-link")
-              .filter(":visible")
-              .first();
-            if (firstButton.length > 0 && $(firstButton).visible()) {
-              $(firstButton).focus();
-            }
-          }
-        }
-      }, 15);
+    if (!daJsEmbed) {
+      daFocusMainQuestion();
     }
   }
   $("input.dauncheckspecificothers").on("change", function () {
