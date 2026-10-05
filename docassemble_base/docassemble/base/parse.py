@@ -8848,7 +8848,7 @@ class Interview:
                     try:
                         question_result = self.askfor(missing_variable, user_dict, old_user_dict, interview_status, seeking=interview_status.seeking, follow_mc=follow_mc, seeking_question=seeking_question)
                     except DAErrorMissingVariable as _dmv_exc:
-                        _asking_question = getattr(docassemble.base.functions.this_thread, 'current_question', None)
+                        _asking_question = getattr(this_thread, 'current_question', None)
                         if _asking_question is not None:
                             _dmv_exc.da_asking_question = _asking_question.id_debug()
                         raise
