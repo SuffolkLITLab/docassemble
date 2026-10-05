@@ -5,13 +5,13 @@ STATIC=docassemble_webapp/docassemble/webapp/static
 for css_file in app/app.css app/pygments.css; do
     orig_file="${css_file/.css/.scss}"
     if [[ docassemble_webapp/docassemble/webapp/static/${orig_file} -nt docassemble_webapp/docassemble/webapp/static/${css_file} ]]; then
-	/usr/bin/sass docassemble_webapp/docassemble/webapp/static/${orig_file} docassemble_webapp/docassemble/webapp/static/${css_file}
+	sass docassemble_webapp/docassemble/webapp/static/${orig_file} docassemble_webapp/docassemble/webapp/static/${css_file}
     fi
 done
 for min_file in app/app.min.css app/pygments.min.css bootstrap-slider/dist/css/bootstrap-slider.min.css bootstrap-combobox/css/bootstrap-combobox.min.css; do
     orig_file="${min_file/.min/}"
     if [[ docassemble_webapp/docassemble/webapp/static/${orig_file} -nt docassemble_webapp/docassemble/webapp/static/${min_file} ]]; then
-	/usr/bin/sass --style compressed docassemble_webapp/docassemble/webapp/static/${orig_file} docassemble_webapp/docassemble/webapp/static/${min_file}
+	sass --style compressed docassemble_webapp/docassemble/webapp/static/${orig_file} docassemble_webapp/docassemble/webapp/static/${min_file}
     fi
 done
 
@@ -24,9 +24,9 @@ for min_file in app/app.min.js app/config.min.js app/manage_api.min.js app/updat
 done
 
 cat ${STATIC}/bootstrap/css/bootstrap-icons.css ${STATIC}/bootstrap-combobox/css/bootstrap-combobox.css ${STATIC}/bootstrap-slider/dist/css/bootstrap-slider.css ${STATIC}/app/app.css > ${STATIC}/app/bundle.css
-/usr/bin/sass --style compressed docassemble_webapp/docassemble/webapp/static/app/bundle.css docassemble_webapp/docassemble/webapp/static/app/bundle.min.css
+sass --style compressed docassemble_webapp/docassemble/webapp/static/app/bundle.css docassemble_webapp/docassemble/webapp/static/app/bundle.min.css
 cat ${STATIC}/app/pygments.css ${STATIC}/bootstrap/css/bootstrap-icons.css > ${STATIC}/app/playgroundbundle.css
-/usr/bin/sass --style compressed docassemble_webapp/docassemble/webapp/static/app/playgroundbundle.css docassemble_webapp/docassemble/webapp/static/app/playgroundbundle.min.css
+sass --style compressed docassemble_webapp/docassemble/webapp/static/app/playgroundbundle.css docassemble_webapp/docassemble/webapp/static/app/playgroundbundle.min.css
 cat ${STATIC}/app/jquery.js ${STATIC}/app/jquery.validate.js ${STATIC}/app/additional-methods.js ${STATIC}/app/jquery.visible.js ${STATIC}/bootstrap/js/bootstrap.bundle.js ${STATIC}/bootstrap-slider/dist/bootstrap-slider.js ${STATIC}/app/app.js ${STATIC}/bootstrap-combobox/js/bootstrap-combobox.js ${STATIC}/app/socket.io.js ${STATIC}/app/signature_pad.umd.min.js > ${STATIC}/app/bundle.js
 uglifyjs docassemble_webapp/docassemble/webapp/static/app/bundle.js --source-map "url='bundle.min.js.map',includeSources" --output docassemble_webapp/docassemble/webapp/static/app/bundle.min.js
 cat ${STATIC}/app/socket.io.js ${STATIC}/app/monitor.js > ${STATIC}/app/monitorbundle.js

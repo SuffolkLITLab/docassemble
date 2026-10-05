@@ -4218,7 +4218,11 @@ function camelToUnderscore(camelStr) {
 function daFocusMainQuestion() {
   var mainQuestion = document.getElementById("daMainQuestion");
   if (mainQuestion) {
-    mainQuestion.focus({ preventScroll: true });
+    if (isAndroid) {
+      mainQuestion.focus();
+    } else {
+      mainQuestion.focus({ preventScroll: true, focusVisible: false});
+    }
     return;
   }
   var target = $(daTargetDiv)[0];
@@ -4227,7 +4231,11 @@ function daFocusMainQuestion() {
       target.setAttribute("tabindex", "-1");
     }
     $(target).addClass("da-no-outline");
-    target.focus({ preventScroll: true });
+    if (isAndroid) {
+      target.focus();
+    } else {
+      target.focus({ preventScroll: true, focusVisible: false });
+    }
   }
 }
 
@@ -5043,44 +5051,7 @@ function daInitialize(doScroll) {
         });
       }
     });
-    $("body").focus();
-    if (!daJsEmbed && !isAndroid) {
-      setTimeout(function () {
-        var firstInput = $("#daform")
-          .not(".da-field-container-note")
-          .first()
-          .find("input, textarea, select")
-          .filter(":visible")
-          .first();
-        if (firstInput.length > 0 && $(firstInput).visible()) {
-          $(firstInput).focus().get(0).focus({ focusVisible: true });
-          var inputType = $(firstInput).attr("type");
-          if (
-            $(firstInput).prop("tagName") != "SELECT" &&
-            inputType != "radio" &&
-            inputType != "checkbox" &&
-            inputType != "hidden" &&
-            inputType != "submit" &&
-            inputType != "file" &&
-            inputType != "range" &&
-            inputType != "number" &&
-            inputType != "date" &&
-            inputType != "time"
-          ) {
-            var strLength = $(firstInput).val().length * 2;
-            if (strLength > 0) {
-              try {
-                $(firstInput)[0].setSelectionRange(strLength, strLength);
-              } catch (err) {
-                console.log(err.message);
-              }
-            }
-          }
-        } else {
-          daFocusMainQuestion();
-        }
-      }, 15);
-    } else {
+    if (!daJsEmbed) {
       daFocusMainQuestion();
     }
   }
