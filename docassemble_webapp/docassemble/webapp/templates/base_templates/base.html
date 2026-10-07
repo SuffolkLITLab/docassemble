@@ -154,7 +154,7 @@
     {%- block flash_messages %}
       {%- with messages = get_flashed_messages(with_categories=true) -%}
         {%- if messages %}
-      <div class="datopcenter col-sm-7 col-md-6 col-lg-5" id="daflash" aria-live="polite" aria-atomic="true">
+      <div class="datopcenter col-sm-7 col-md-6 col-lg-5" id="daflash" aria-live="assertive" aria-atomic="true">
           {%- for category, message in messages %}
             {%- if category=='error' %}
               {%- set category='danger' %}
