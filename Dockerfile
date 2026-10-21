@@ -12,6 +12,7 @@ bash -c \
 && echo 'deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/ubuntu `lsb_release -cs` nginx' > /etc/apt/sources.list.d/nginx.list \
 && echo -e 'Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n' > /etc/apt/preferences.d/99nginx \
 && apt-get -q -y update \
+&& apt-get -q -y install --only-upgrade ca-certificates \
 && apt-get -q -y install nginx \
 && cp /tmp/docassemble/Docker/nginx.conf /etc/nginx/ \
 && rm /etc/nginx/conf.d/default.conf \
@@ -71,7 +72,7 @@ USER www-data
 RUN bash -c \
 "python3 -m venv --copies /usr/share/docassemble/local3.14 \
 && source /usr/share/docassemble/local3.14/bin/activate \
-&& pip install --upgrade pip==26.0.1 \
+&& pip install --upgrade pip==26.2.2 \
 && pip install --upgrade mod_wsgi==5.0.2 \
 && pip install --upgrade \
    certbot==5.2.2 \
