@@ -7,7 +7,7 @@ import click
 from flask import current_app
 from flask_login import login_user
 from sqlalchemy import or_, and_, select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import aliased, joinedload
 from docassemble.base.functions import SS_NEW, SS_IGNORE, dict_as_json
 from docassemble.base.interview_cache import get_interview
 from docassemble.base.parse import InterviewStatus
@@ -138,52 +138,43 @@ def clear_old_interviews():
         except:
             logmessage("Error in configuration for interview delete days by filename")
     nowtime = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
-    # logmessage("clear_old_interviews: days is " + str(interview_delete_days))
     for filename, days in days_by_filename.items():
-        last_index = -1
         if days == 0:
             continue
-        while True:
-            subq = select(UserDict.key, UserDict.filename, db.func.max(UserDict.indexno).label('indexno')).where(UserDict.indexno > last_index, UserDict.filename == filename).group_by(UserDict.filename, UserDict.key).subquery()
-            results = db.session.execute(select(UserDict.indexno, UserDict.key, UserDict.filename, UserDict.modtime).join(subq, and_(subq.c.indexno == UserDict.indexno)).order_by(UserDict.indexno).limit(1000))
-            stale = []
-            results_count = 0
-            for record in results:
-                results_count += 1
-                last_index = record.indexno
-                delta = nowtime - record.modtime
-                # logmessage("clear_old_interviews: delta days is " + str(delta.days))
-                if delta.days > days:
-                    stale.append({'key': record.key, 'filename': record.filename})
-            if results_count == 0:
-                break
-            for item in stale:
-                obtain_lock_patiently(item['key'], item['filename'])
-                reset_user_dict(item['key'], item['filename'], force=True)
-                release_lock(item['key'], item['filename'])
-                time.sleep(0.15)
-            time.sleep(0.6)
+        delete_stale_sessions(nowtime, days, filename=filename)
     if interview_delete_days == 0:
         return
-    last_index = -1
+    delete_stale_sessions(nowtime, interview_delete_days, exclude_filenames=list(days_by_filename.keys()))
+
+
+def delete_stale_sessions(nowtime, days, filename=None, exclude_filenames=None):
+    # A session counts as old when its latest row is older than the cutoff
+    # we go through rows oldest first, so each row is only checked once
+    cutoff = nowtime - datetime.timedelta(days=days + 1)
+    newer = aliased(UserDict)
+    has_newer_row = select(newer.indexno).where(
+        newer.key == UserDict.key,
+        newer.filename.is_not_distinct_from(UserDict.filename),
+        newer.indexno > UserDict.indexno,
+    ).correlate(UserDict).exists()
+    last_seen = None
     while True:
-        subq = select(UserDict.key, UserDict.filename, db.func.max(UserDict.indexno).label('indexno')).where(UserDict.indexno > last_index, UserDict.filename.notin_(days_by_filename.keys())).group_by(UserDict.filename, UserDict.key).subquery()
-        results = db.session.execute(select(UserDict.indexno, UserDict.key, UserDict.filename, UserDict.modtime).join(subq, and_(subq.c.indexno == UserDict.indexno)).order_by(UserDict.indexno).limit(1000))
-        stale = []
-        results_count = 0
-        for record in results:
-            results_count += 1
-            last_index = record.indexno
-            delta = nowtime - record.modtime
-            # logmessage("clear_old_interviews: delta days is " + str(delta.days))
-            if delta.days > interview_delete_days:
-                stale.append({'key': record.key, 'filename': record.filename})
-        if results_count == 0:
+        query = select(UserDict.indexno, UserDict.key, UserDict.filename, UserDict.modtime).where(UserDict.modtime <= cutoff, ~has_newer_row)
+        if filename is not None:
+            query = query.where(UserDict.filename == filename)
+        if exclude_filenames is not None:
+            query = query.where(UserDict.filename.notin_(exclude_filenames))
+        if last_seen is not None:
+            last_modtime, last_indexno = last_seen
+            query = query.where(or_(UserDict.modtime > last_modtime, and_(UserDict.modtime == last_modtime, UserDict.indexno > last_indexno)))
+        results = db.session.execute(query.order_by(UserDict.modtime, UserDict.indexno).limit(1000)).all()
+        if len(results) == 0:
             break
-        for item in stale:
-            obtain_lock_patiently(item['key'], item['filename'])
-            reset_user_dict(item['key'], item['filename'], force=True)
-            release_lock(item['key'], item['filename'])
+        last_seen = (results[-1].modtime, results[-1].indexno)
+        for record in results:
+            obtain_lock_patiently(record.key, record.filename)
+            reset_user_dict(record.key, record.filename, force=True)
+            release_lock(record.key, record.filename)
             time.sleep(0.15)
         time.sleep(0.6)
 
