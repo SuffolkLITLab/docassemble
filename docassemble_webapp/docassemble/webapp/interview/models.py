@@ -10,6 +10,7 @@ class UserDict(Base):
     __tablename__ = dbtableprefix + "userdict"
     __table_args__ = (
         Index(dbtableprefix + 'ix_userdict_key_filename', 'key', 'filename'),
+        Index(dbtableprefix + 'ix_userdict_modtime_indexno', 'modtime', 'indexno'),
     )
     indexno: Mapped[int] = mapped_column(primary_key=True)
     filename: Mapped[Optional[str]] = mapped_column(String(255), index=True)
