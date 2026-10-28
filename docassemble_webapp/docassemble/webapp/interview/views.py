@@ -526,9 +526,9 @@ def index(action_argument=None, refer=None):
             secret = request.cookies['visitor_secret']
     else:
         secret = request.cookies.get('secret', None)
-    use_cache = int(request.args.get('cache', 1))
-    reset_interview = int(request.args.get('reset', 0))
-    new_interview = int(request.args.get('new_session', 0))
+    use_cache = int(request.args.get('cache', 1) or 1)
+    reset_interview = int(request.args.get('reset', 0) or 0)
+    new_interview = int(request.args.get('new_session', 0) or 0)
     if secret is None:
         secret = random_string(16)
         set_cookie = True
