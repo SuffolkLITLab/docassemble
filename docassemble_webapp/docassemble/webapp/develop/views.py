@@ -509,11 +509,12 @@ def gd_sync_wait():
     current_project = get_current_project()
     next_url = current_app.user_manager.make_safe_url_function(request.args.get('next', url_for('develop.playground_page', project=current_project)))
     auto_next_url = request.args.get('auto_next', None)
+    auto_next_json = json.dumps(auto_next_url).replace('<', '\\u003c')
     my_csrf = generate_csrf()
     script = f"""
     <script{DEFER}>
       var daCheckinInterval = null;
-      var autoNext = {json.dumps(auto_next_url)};
+      var autoNext = {auto_next_json};
       var resultsAreIn = false;
       var pollInterval = null;
       var taskId = null;
@@ -950,11 +951,12 @@ def od_sync_wait():
     auto_next_url = request.args.get('auto_next', None)
     if auto_next_url is not None:
         auto_next_url = current_app.user_manager.make_safe_url_function(auto_next_url)
+    auto_next_json = json.dumps(auto_next_url).replace('<', '\\u003c')
     my_csrf = generate_csrf()
     script = f"""
     <script{DEFER}>
       var daCheckinInterval = null;
-      var autoNext = {json.dumps(auto_next_url)};
+      var autoNext = {auto_next_json};
       var resultsAreIn = false;
       var pollInterval = null;
       var taskId = null;
@@ -2053,9 +2055,10 @@ def pull_playground_package():
         "daGetGitBranches": url_for('packages.get_git_branches'),
         "daGithubBranch": GITHUB_BRANCH
     }
+    initial_values_json = json.dumps(initial_values).replace('<', '\\u003c')
     extra_js = f"""
     <script{DEFER} src="{url_for('static', filename='app/pullplaygroundpackage.min.js')}"></script>
-    <script{DEFER}>Object.assign(window, {json.dumps(initial_values)})</script>
+    <script{DEFER}>Object.assign(window, {initial_values_json})</script>
 """
     response = make_response(render_template('develop/pull_playground_package.html',
                                              current_project=current_project,
