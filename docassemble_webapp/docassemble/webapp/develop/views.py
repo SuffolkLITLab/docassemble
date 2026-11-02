@@ -42,6 +42,7 @@ from flask_cors import cross_origin
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
 from markupsafe import Markup
+from jinja2.utils import htmlsafe_json_dumps
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import YamlLexer  # pylint: disable=no-name-in-module
@@ -509,12 +510,11 @@ def gd_sync_wait():
     current_project = get_current_project()
     next_url = current_app.user_manager.make_safe_url_function(request.args.get('next', url_for('develop.playground_page', project=current_project)))
     auto_next_url = request.args.get('auto_next', None)
-    auto_next_json = json.dumps(auto_next_url).replace('<', '\\u003c')
     my_csrf = generate_csrf()
     script = f"""
     <script{DEFER}>
       var daCheckinInterval = null;
-      var autoNext = {auto_next_json};
+      var autoNext = {htmlsafe_json_dumps(auto_next_url)};
       var resultsAreIn = false;
       var pollInterval = null;
       var taskId = null;
@@ -951,12 +951,11 @@ def od_sync_wait():
     auto_next_url = request.args.get('auto_next', None)
     if auto_next_url is not None:
         auto_next_url = current_app.user_manager.make_safe_url_function(auto_next_url)
-    auto_next_json = json.dumps(auto_next_url).replace('<', '\\u003c')
     my_csrf = generate_csrf()
     script = f"""
     <script{DEFER}>
       var daCheckinInterval = null;
-      var autoNext = {auto_next_json};
+      var autoNext = {htmlsafe_json_dumps(auto_next_url)};
       var resultsAreIn = false;
       var pollInterval = null;
       var taskId = null;
@@ -2055,10 +2054,9 @@ def pull_playground_package():
         "daGetGitBranches": url_for('packages.get_git_branches'),
         "daGithubBranch": GITHUB_BRANCH
     }
-    initial_values_json = json.dumps(initial_values).replace('<', '\\u003c')
     extra_js = f"""
     <script{DEFER} src="{url_for('static', filename='app/pullplaygroundpackage.min.js')}"></script>
-    <script{DEFER}>Object.assign(window, {initial_values_json})</script>
+    <script{DEFER}>Object.assign(window, {htmlsafe_json_dumps(initial_values)})</script>
 """
     response = make_response(render_template('develop/pull_playground_package.html',
                                              current_project=current_project,

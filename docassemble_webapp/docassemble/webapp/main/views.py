@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import quote as urllibquote
 from user_agents import parse as ua_parse
 from markupsafe import Markup
+from jinja2.utils import htmlsafe_json_dumps
 from flask import (
     current_app,
     redirect,
@@ -196,10 +197,9 @@ def restart_page():
     if not current_app.config['ALLOW_RESTARTING']:
         return ('File not found', 404)
     next_url = current_app.user_manager.make_safe_url_function(request.args.get('next', url_for('admin.interview_list', post_restart=1)))
-    next_url_json = json.dumps(next_url).replace('<', '\\u003c')
     script = f"""
     <script{DEFER}>
-      var nextUrl = {next_url_json};
+      var nextUrl = {htmlsafe_json_dumps(next_url)};
       var pollInterval = null;
       var taskId = null;
       function daRestartCallback(data){{
