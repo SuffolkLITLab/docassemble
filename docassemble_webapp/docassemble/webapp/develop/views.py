@@ -42,6 +42,7 @@ from flask_cors import cross_origin
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
 from markupsafe import Markup
+from jinja2.utils import htmlsafe_json_dumps
 from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import YamlLexer  # pylint: disable=no-name-in-module
@@ -513,7 +514,7 @@ def gd_sync_wait():
     script = f"""
     <script{DEFER}>
       var daCheckinInterval = null;
-      var autoNext = {json.dumps(auto_next_url)};
+      var autoNext = {htmlsafe_json_dumps(auto_next_url)};
       var resultsAreIn = false;
       var pollInterval = null;
       var taskId = null;
@@ -954,7 +955,7 @@ def od_sync_wait():
     script = f"""
     <script{DEFER}>
       var daCheckinInterval = null;
-      var autoNext = {json.dumps(auto_next_url)};
+      var autoNext = {htmlsafe_json_dumps(auto_next_url)};
       var resultsAreIn = false;
       var pollInterval = null;
       var taskId = null;
@@ -2055,7 +2056,7 @@ def pull_playground_package():
     }
     extra_js = f"""
     <script{DEFER} src="{url_for('static', filename='app/pullplaygroundpackage.min.js')}"></script>
-    <script{DEFER}>Object.assign(window, {json.dumps(initial_values)})</script>
+    <script{DEFER}>Object.assign(window, {htmlsafe_json_dumps(initial_values)})</script>
 """
     response = make_response(render_template('develop/pull_playground_package.html',
                                              current_project=current_project,
