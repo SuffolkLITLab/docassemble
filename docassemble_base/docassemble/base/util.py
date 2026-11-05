@@ -403,7 +403,7 @@ from .pdftk import (
     overlay_pdf_multi,
     read_fields,
 )
-from .thread_context import this_thread
+from .thread_context import this_thread, user_dict_context
 
 capitalize_func = capitalize
 NoneType = type(None)
@@ -8224,9 +8224,15 @@ def table_safe_eval(x, user_dict_copy, table_info):
 
 
 def text_of_table(table_info, orig_user_dict, temp_vars, editable=True):
-    table_content = "\n"
     user_dict_copy = copy.copy(orig_user_dict)
     user_dict_copy.update(temp_vars)
+    # let defined() see row_item by making the table's copy the current user dict
+    with user_dict_context(user_dict_copy):
+        return _text_of_table(table_info, user_dict_copy, editable)
+
+
+def _text_of_table(table_info, user_dict_copy, editable):
+    table_content = "\n"
     # logmessage("i is " + str(user_dict_copy['i']))
     header_output = [table_safe(x.text(user_dict_copy)) for x in table_info.header]
     if table_info.is_editable and not editable:
