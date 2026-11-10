@@ -4438,11 +4438,11 @@ div.da-grid-container > div.dafieldpart > div.da-field-checkboxes {
 
 .dalabelauty::before {
   font-family: "bootstrap-icons" !important;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
   position: absolute;
-  left: var(--bs-btn-padding-x, 0.75rem);
-  top: 50%;
+  left: 0.6rem;
+  top: 1.2rem;
   transform: translateY(-50%);
 }
 
@@ -4450,13 +4450,13 @@ input[type=radio] + .dalabelauty::before {
   content: "\f28a";
 } /* bi-circle */
 input[type=radio]:checked + .dalabelauty::before {
-  content: "\f26b";
+  content: "\f26a";
 } /* bi-check-circle */
 input[type=checkbox] + .dalabelauty::before {
   content: "\f584";
 } /* bi-square */
 input[type=checkbox]:checked + .dalabelauty::before {
-  content: "\f26d";
+  content: "\f26c";
 } /* bi-check-square */
 input:not(:checked) + .dalabelauty {
   --bs-btn-color: var(--bs-light-text-emphasis);
