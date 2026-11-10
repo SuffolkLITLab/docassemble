@@ -1,5 +1,6 @@
+import datetime
 from typing import Optional
-from sqlalchemy import Integer, String, Text, ForeignKey, Boolean, text, true, false
+from sqlalchemy import Integer, String, Text, ForeignKey, Boolean, DateTime, text, true, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from docassemble.webapp.database import dbtableprefix
 from docassemble.webapp.db_base import Base
@@ -28,6 +29,7 @@ class Package(Base):
     active: Mapped[bool] = mapped_column(Boolean, server_default=true())
     gitbranch: Mapped[Optional[str]] = mapped_column(String(255))
     gitcommit: Mapped[Optional[str]] = mapped_column(String(255))
+    modtime: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime)
 
 
 class PackageAuth(Base):
