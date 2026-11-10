@@ -53,6 +53,11 @@ from .helpers import (
 )
 from .models import Package
 
+
+def log_package_change(action, name):
+    logmessage(f"ADMIN-AUDIT package {action} requested: package={name}")
+
+
 @packages_bp.route('/updatepackage', methods=['GET', 'POST'])
 @login_required
 @roles_required(['admin', 'developer'])
@@ -89,8 +94,10 @@ def update_package():
                 break
         if the_package is not None:
             if action == 'uninstall' and the_package.can_uninstall:
+                log_package_change('uninstall', target)
                 uninstall_package(target)
             elif action == 'update' and the_package.can_update:
+                log_package_change('update', target)
                 existing_package = db.session.execute(select(Package).filter_by(name=target, active=True).order_by(Package.id.desc())).scalar()
                 if existing_package is not None:
                     if limitation and existing_package.limitation != limitation:
@@ -130,6 +137,7 @@ def update_package():
                 saved_file.finalize()
                 pkgname = get_package_name_from_zip(zippath)
                 if user_can_edit_package(pkgname=pkgname):
+                    log_package_change('zip install', pkgname)
                     install_zip_package(pkgname, file_number)
                     result = celery_app.signature('tasks.update_packages').apply_async(link=celery_app.signature('tasks.reset_server', kwargs={"run_create": should_run_create(pkgname)}))
                     # result = docassemble.webapp.worker.update_packages.apply_async(link=docassemble.webapp.worker.reset_server.s(run_create=should_run_create(pkgname)))
@@ -157,6 +165,7 @@ def update_package():
                     packagename = re.sub(r'.*/', '', packagename)
                     packagename = re.sub(r'^docassemble-', 'docassemble.', packagename)
                 if user_can_edit_package(giturl=giturl) and user_can_edit_package(pkgname=packagename):
+                    log_package_change('github install', f"{packagename} url={giturl} branch={branch}")
                     install_git_package(packagename, giturl, branch)
                     result = celery_app.signature('tasks.update_packages').apply_async(link=celery_app.signature('tasks.reset_server', kwargs={"run_create": should_run_create(packagename)}))
                     #result = docassemble.webapp.worker.update_packages.apply_async(link=docassemble.webapp.worker.reset_server.s(run_create=should_run_create(packagename)))
@@ -175,6 +184,7 @@ def update_package():
                     limitation = None
                 packagename = re.sub(r'[^A-Za-z0-9\_\-\.]', '', packagename)
                 if user_can_edit_package(pkgname=packagename):
+                    log_package_change('pip install', packagename)
                     install_pip_package(packagename, limitation)
                     result = celery_app.signature('tasks.update_packages').apply_async(link=celery_app.signature('tasks.reset_server', kwargs={"run_create": should_run_create(packagename)}))
                     # result = docassemble.webapp.worker.update_packages.apply_async(link=docassemble.webapp.worker.reset_server.s(run_create=should_run_create(packagename)))

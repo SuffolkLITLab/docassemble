@@ -1,6 +1,7 @@
 import os
 import sys
 import socket
+import datetime
 import tempfile
 import subprocess
 import xmlrpc.client
@@ -434,6 +435,19 @@ def get_git_commit(package_name):
     return None
 
 
+def get_install_time(package_name):
+    """Return when pip wrote this package's files, or None if that can't be found"""
+    try:
+        dist = importlib.metadata.distribution(package_name)
+        for file in dist.files or []:
+            if file.name == 'METADATA':
+                modified = os.path.getmtime(dist.locate_file(file))
+                return datetime.datetime.fromtimestamp(modified, datetime.timezone.utc).replace(tzinfo=None)
+    except (importlib.metadata.PackageNotFoundError, OSError):
+        pass
+    return None
+
+
 def update_versions(session, start_time=None):
     if start_time is None:
         start_time = time.time()
@@ -445,7 +459,7 @@ def update_versions(session, start_time=None):
     for package in session.execute(select(Package).filter_by(active=True).order_by(Package.name, Package.id.desc())).scalars():
         if package.name in package_by_name:
             continue
-        package_by_name[package.name] = Object(id=package.id, packageversion=package.packageversion, gitcommit=package.gitcommit, name=package.name)
+        package_by_name[package.name] = Object(id=package.id, packageversion=package.packageversion, gitcommit=package.gitcommit, modtime=package.modtime, name=package.name)
     installed_packages = get_installed_distributions(start_time=start_time)
     for package in installed_packages:
         if package.key in package_by_name:
@@ -461,10 +475,21 @@ def update_versions(session, start_time=None):
                     for install_row in session.execute(select(Install).filter_by(hostname=hostname, package_id=package_by_name[package.key].id)).scalars():
                         install_row.packageversion = package.version
                         install_row.gitcommit = commit
-            if package.version != package_by_name[package.key].packageversion or commit != package_by_name[package.key].gitcommit:
-                for package_row in session.execute(select(Package).filter_by(active=True, name=package_by_name[package.key].name).with_for_update()).scalars():
+            old = package_by_name[package.key]
+            if package.version != old.packageversion or commit != old.gitcommit:
+                old_commit = (old.gitcommit or 'none')[:7]
+                new_commit = (commit or 'none')[:7]
+                logmessage(f"ADMIN-AUDIT package changed: {old.name} {old.packageversion} ({old_commit}) -> {package.version} ({new_commit})")
+                changed_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+                for package_row in session.execute(select(Package).filter_by(active=True, name=old.name).with_for_update()).scalars():
                     package_row.packageversion = package.version
                     package_row.gitcommit = commit
+                    package_row.modtime = changed_at
+            elif old.modtime is None:
+                installed_at = get_install_time(package.key)
+                if installed_at is not None:
+                    for package_row in session.execute(select(Package).filter_by(active=True, name=old.name).with_for_update()).scalars():
+                        package_row.modtime = installed_at
     session.flush()
     logmessage("update_versions: ended after " + str(time.time() - start_time))
 
