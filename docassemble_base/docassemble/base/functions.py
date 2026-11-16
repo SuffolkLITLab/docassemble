@@ -4248,6 +4248,17 @@ def _inspect_user_dict_with_prior(var, caller: DefCaller, alt=None):
     except:
         return _inspect_user_dict(var, caller, alt=alt)
 
+def _find_local_scope(variable: str):
+    frame = sys._getframe(2)
+    while frame is not None:
+        filename = frame.f_code.co_filename
+        if '/docassemble/base/' not in filename and '/docassemble/webapp/' not in filename:
+            frame_locals = frame.f_locals
+            if variable in frame_locals:
+                return frame.f_globals, frame_locals
+        frame = frame.f_back
+    return None
+
 
 def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
     """Checks if a variable is defined. Used by defined(),
@@ -4266,15 +4277,20 @@ def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
         raise DAError("defined: variable " + repr(var) + " is not a valid variable name")
     variable = components[0][1]
     the_user_dict = get_old_user_dict() if prior else get_current_user_dict()
+    the_globals = the_user_dict
+    the_locals = None
     failure_val = False if caller.is_predicate() else alt
     if the_user_dict is None or variable not in the_user_dict:
-        if caller.is_pure():
-            return failure_val
-        force_ask_nameerror(variable)
+        local_scope = None if prior else _find_local_scope(variable)
+        if local_scope is None:
+            if caller.is_pure():
+                return failure_val
+            force_ask_nameerror(variable)
+        the_globals, the_locals = local_scope
     if len(components) == 1:
         if caller.is_predicate():
             return True
-        return eval(variable, the_user_dict)
+        return eval(variable, the_globals, the_locals)
     cum_variable = ''
     if caller.is_pure():
         this_thread.probing = True
@@ -4288,7 +4304,7 @@ def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
             to_eval = "hasattr(" + cum_variable + ", " + repr(elem[1]) + ")"
             cum_variable += '.' + elem[1]
             try:
-                result = eval(to_eval, the_user_dict)
+                result = eval(to_eval, the_globals, the_locals)
             except:
                 if caller.is_pure():
                     this_thread.probing = False
@@ -4299,7 +4315,7 @@ def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
             if caller.is_pure():
                 this_thread.probing = False
                 return failure_val
-            the_cum = eval(base_var, the_user_dict)
+            the_cum = eval(base_var, the_globals, the_locals)
             try:
                 if not the_cum.has_nonrandom_instance_name:
                     has_random_instance_name = True
@@ -4310,14 +4326,14 @@ def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
             getattr(the_cum, elem[1])
         elif elem[0] == 'index':
             try:
-                the_index = eval(elem[1], the_user_dict)
+                the_index = eval(elem[1], the_globals, the_locals)
             except:
                 if caller.is_pure():
                     this_thread.probing = False
                     return failure_val
                 value(elem[1])
             try:
-                the_cum = eval(cum_variable, the_user_dict)
+                the_cum = eval(cum_variable, the_globals, the_locals)
             except:
                 if caller.is_pure():
                     this_thread.probing = False
@@ -4333,7 +4349,7 @@ def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
                 to_eval = elem[1] + " in " + var_elements
             cum_variable += '[' + elem[1] + ']'
             try:
-                result = eval(to_eval, the_user_dict)
+                result = eval(to_eval, the_globals, the_locals)
             except:
                 # the evaluation probably will never fail because we know the base variable is defined
                 if caller.is_pure():
@@ -4357,7 +4373,7 @@ def _inspect_user_dict(var, caller: DefCaller, alt=None, prior=False):
         this_thread.probing = False
     if caller.is_predicate():
         return True
-    return eval(cum_variable, the_user_dict)
+    return eval(cum_variable, the_globals, the_locals)
 
 
 # def _inspect_user_dict_new(var, caller: DefCaller, alt=None, prior=False):
