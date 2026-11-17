@@ -1940,6 +1940,7 @@ div.da-grid-container > div.dafieldpart > div.da-field-checkboxes {
   width: 100%;
   position: relative;
   padding-left: 2rem;
+  --bs-btn-border-radius: 25px;
 }
 
 .dalabelauty::before {
@@ -1948,7 +1949,7 @@ div.da-grid-container > div.dafieldpart > div.da-field-checkboxes {
   line-height: 1;
   position: absolute;
   left: 0.6rem;
-  top: 1.2rem;
+  top: 1.15rem;
   transform: translateY(-50%);
 }
 
