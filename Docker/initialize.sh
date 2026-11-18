@@ -1276,7 +1276,6 @@ if [ "${DAWEBSERVER:-nginx}" = "nginx" ]; then
         echo "initialize: Getting ready to start NGINX: " `date +"%T.%N"` >&2
         if [ "${DAREADONLYFILESYSTEM:-false}" == "false" ]; then
             if [ "${WWWUID:-none}" != "none" ] && [ "${WWWGID:-none}" != "none" ] && [ `id -u www-data` != $WWWUID ]; then
-                echo "initialize: Changing the UID and GID of files" >&2
                 echo "initialize: Changing the UID and GID of files" `date +"%T.%N"` >&2
                 OLDUID=`id -u www-data`
                 OLDGID=`id -g www-data`

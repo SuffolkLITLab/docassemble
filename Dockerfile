@@ -1,21 +1,28 @@
-FROM jhpyle/docassemble-os:1.0.31
+FROM jhpyle/docassemble-os:1.0.33
 USER root
 
 COPY ./Docker/nginx.conf /tmp/docassemble/Docker/nginx.conf
 
-# Update nginx to latest stable over the default in Ubuntu 24.04
+# Update nginx to latest mainline over the default in Ubuntu 26.04
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
 bash -c \
 "apt-get -q -y update \
 && apt-get -q -y remove nginx \
 && curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
-&& echo 'deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/ubuntu `lsb_release -cs` nginx' > /etc/apt/sources.list.d/nginx.list \
+&& echo 'deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx' > /etc/apt/sources.list.d/nginx.list \
 && echo -e 'Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n' > /etc/apt/preferences.d/99nginx \
 && apt-get -q -y update \
 && apt-get -q -y install --only-upgrade ca-certificates \
 && apt-get -q -y install nginx \
 && cp /tmp/docassemble/Docker/nginx.conf /etc/nginx/ \
 && rm /etc/nginx/conf.d/default.conf \
+&& apt-get -q -y clean"
+
+# Update jdk to latest as well
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
+bash -c \
+"apt-get -q -y update \
+&& apt-get -q -y install --only-upgrade openjdk-25-jre \
 && apt-get -q -y clean"
 
 COPY --chown=www-data . /tmp/docassemble/
