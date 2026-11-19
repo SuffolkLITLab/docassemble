@@ -13798,7 +13798,7 @@ function flash(message, priority, clear) {
   }
   if (message != null) {
     if (priority == "aria") {
-      var newElement = $('<div class="visually-hidden">' + message + "</div>");
+      var newElement = $('<div class="visually-hidden" role="alert">' + message + "</div>");
       $("#daflash").append(newElement);
       setTimeout(function () {
         newElement.remove();
