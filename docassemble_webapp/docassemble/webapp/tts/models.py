@@ -23,7 +23,7 @@ class SpeakList(Base):
     language: Mapped[Optional[str]] = mapped_column(String(10))
     dialect: Mapped[Optional[str]] = mapped_column(String(10))
     voice: Mapped[Optional[str]] = mapped_column(String(20))
-    upload: Mapped[int] = mapped_column(
+    upload: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey(dbtableprefix + "uploads.indexno", ondelete="CASCADE"),
         index=True
