@@ -256,7 +256,7 @@ def _ensure_selected_appearance(pdf, widget):
 def _iter_widgets(pdf):
     for page in pdf.pages:
         for annot in page.get('/Annots', []):
-            if annot.get('/Subtype') == '/Widget':
+            if annot and annot.get('/Subtype') == '/Widget':
                 yield page, annot
 
 
@@ -602,6 +602,8 @@ def fill_template(template, data_strings=None, data_names=None, hidden=None, rea
             if not hasattr(page, 'Annots'):
                 continue
             for the_annot in page.Annots:
+                if not the_annot:
+                    continue
                 annot = the_annot
                 annot_kid = None
                 while not (hasattr(annot, "FT") and hasattr(annot, "T")) and hasattr(annot, 'Parent'):
