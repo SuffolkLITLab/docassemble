@@ -854,13 +854,14 @@ def index(action_argument=None, refer=None):
     for kv_key, kv_var in known_varnames.items():
         try:
             field_identifier = myb64unquote(kv_key)
-            m = re.search(r'_field(?:_[0-9]+)?_([0-9]+)', field_identifier)
+            m = re.search(r'_field_((?:[0-9]+_)?[0-9]+)', field_identifier)
             if m:
                 numbered_fields[kv_var] = kv_key
                 if kv_key in raw_visible_fields or kv_var in raw_visible_fields:
-                    field_numbers[kv_var] = int(m.group(1))
-            m = re.search(r'_field_((?:[0-9]+_)?[0-9]+)', field_identifier)
-            if m:
+                    if '_' in m.group(1):
+                      field_numbers[kv_var] = m.group(1)
+                    else:
+                      field_numbers[kv_var] = int(m.group(1))
                 if kv_var not in all_field_numbers:
                     all_field_numbers[kv_var] = set()
                 if '_' in m.group(1):
@@ -1715,24 +1716,29 @@ def index(action_argument=None, refer=None):
             process_set_variable(key, user_dict, vars_set, old_values)
             the_string = key + ' = ' + data
             new_values[key] = data
-            if orig_key in field_numbers and the_question is not None and len(the_question.fields) > field_numbers[orig_key] and hasattr(the_question.fields[field_numbers[orig_key]], 'validate'):
-                field_name = safeid('_field_' + str(field_numbers[orig_key]))
-                if field_name in post_data:
-                    the_key = field_name
-                else:
-                    the_key = orig_key
-                with user_dict_context(user_dict):
-                    the_func = eval(the_question.fields[field_numbers[orig_key]].validate['compute'], user_dict)
-                    try:
-                        the_result = the_func(test_data)
-                        if not the_result:
-                            field_error[the_key] = word("Please enter a valid value.")
-                            validated = False
-                            continue
-                    except BaseException as errstr:
-                        field_error[the_key] = str(errstr)
-                        validated = False
-                        continue
+            if orig_key in field_numbers and the_question is not None:
+                this_field = None
+                for field in the_question.fields:
+                    if field.number == field_numbers[orig_key]:
+                        this_field = field
+                if this_field and hasattr(this_field, 'validate'):
+                  field_name = safeid('_field_' + str(field_numbers[orig_key]))
+                  if field_name in post_data:
+                      the_key = field_name
+                  else:
+                      the_key = orig_key
+                  with user_dict_context(user_dict):
+                      the_func = eval(this_field.validate['compute'], user_dict)
+                      try:
+                          the_result = the_func(test_data)
+                          if not the_result:
+                              field_error[the_key] = word("Please enter a valid value.")
+                              validated = False
+                              continue
+                      except BaseException as errstr:
+                          field_error[the_key] = str(errstr)
+                          validated = False
+                          continue
         try:
             exec(the_string, user_dict)
             changed = True
@@ -1886,23 +1892,27 @@ def index(action_argument=None, refer=None):
                                     elements.append("docassemble.base.util.DAFile(" + repr(file_field_tr + "[" + str(indexno) + "]") + ", filename=" + repr(filename) + ", number=" + str(file_number) + ", make_pngs=True, mimetype=" + repr(mimetype) + ", extension=" + repr(extension) + ")")
                                     indexno += 1
                                 the_file_list = "docassemble.base.util.DAFileList(" + repr(file_field_tr) + ", elements=[" + ", ".join(elements) + "])"
-                                if var_to_store in field_numbers and the_question is not None and len(the_question.fields) > field_numbers[var_to_store]:
-                                    the_field = the_question.fields[field_numbers[var_to_store]]
-                                    add_permissions_for_field(the_field, interview_status, files_to_process)
-                                    if hasattr(the_field, 'validate'):
-                                        the_key = orig_file_field
-                                        with user_dict_context(user_dict):
-                                            the_func = eval(the_field.validate['compute'], user_dict)
-                                            try:
-                                                the_result = the_func(eval(the_file_list))
-                                                if not the_result:
-                                                    field_error[the_key] = word("Please enter a valid value.")
+                                if var_to_store in field_numbers and the_question is not None:
+                                    the_field = None
+                                    for field in the_question.fields:
+                                        if field_numbers[var_to_store] == field.number:
+                                          the_field = field
+                                    if the_field:
+                                        add_permissions_for_field(the_field, interview_status, files_to_process)
+                                        if hasattr(the_field, 'validate'):
+                                            the_key = orig_file_field
+                                            with user_dict_context(user_dict):
+                                                the_func = eval(the_field.validate['compute'], user_dict)
+                                                try:
+                                                    the_result = the_func(eval(the_file_list))
+                                                    if not the_result:
+                                                        field_error[the_key] = word("Please enter a valid value.")
+                                                        validated = False
+                                                        break
+                                                except BaseException as errstr:
+                                                    field_error[the_key] = str(errstr)
                                                     validated = False
                                                     break
-                                            except BaseException as errstr:
-                                                field_error[the_key] = str(errstr)
-                                                validated = False
-                                                break
                                 the_string = file_field + " = " + the_file_list
                                 inline_files_processed.append(file_field)
                             else:
@@ -2029,23 +2039,27 @@ def index(action_argument=None, refer=None):
                                     elements.append("docassemble.base.util.DAFile(" + repr(file_field_tr + '[' + str(indexno) + ']') + ", filename=" + repr(filename) + ", number=" + str(file_number) + ", make_pngs=True, mimetype=" + repr(mimetype) + ", extension=" + repr(extension) + ")")
                                     indexno += 1
                                 the_file_list = "docassemble.base.util.DAFileList(" + repr(file_field_tr) + ", elements=[" + ", ".join(elements) + "])"
-                                if var_to_store in field_numbers and the_question is not None and len(the_question.fields) > field_numbers[var_to_store]:
-                                    the_field = the_question.fields[field_numbers[var_to_store]]
-                                    add_permissions_for_field(the_field, interview_status, files_to_process)
-                                    if hasattr(the_question.fields[field_numbers[var_to_store]], 'validate'):
-                                        the_key = orig_file_field
-                                        with user_dict_context(user_dict):
-                                            the_func = eval(the_question.fields[field_numbers[var_to_store]].validate['compute'], user_dict)
-                                            try:
-                                                the_result = the_func(eval(the_file_list))
-                                                if not the_result:
-                                                    field_error[the_key] = word("Please enter a valid value.")
+                                if var_to_store in field_numbers and the_question is not None:
+                                    the_field = None
+                                    for field in the_question.fields:
+                                        if field_numbers[var_to_store] == field.number:
+                                            the_field = field
+                                    if the_field:
+                                        add_permissions_for_field(the_field, interview_status, files_to_process)
+                                        if hasattr(the_question.fields[field_numbers[var_to_store]], 'validate'):
+                                            the_key = orig_file_field
+                                            with user_dict_context(user_dict):
+                                                the_func = eval(the_question.fields[field_numbers[var_to_store]].validate['compute'], user_dict)
+                                                try:
+                                                    the_result = the_func(eval(the_file_list))
+                                                    if not the_result:
+                                                        field_error[the_key] = word("Please enter a valid value.")
+                                                        validated = False
+                                                        break
+                                                except BaseException as errstr:
+                                                    field_error[the_key] = str(errstr)
                                                     validated = False
                                                     break
-                                            except BaseException as errstr:
-                                                field_error[the_key] = str(errstr)
-                                                validated = False
-                                                break
                                 the_string = file_field + " = " + the_file_list
                             else:
                                 the_string = file_field + " = None"
