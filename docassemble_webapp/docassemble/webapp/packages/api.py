@@ -124,7 +124,7 @@ def api_package():
                     else:
                         install_git_package(target, existing_package.giturl, get_master_branch(existing_package.giturl))
                 elif existing_package.type == 'pip':
-                    if existing_package.name == 'docassemble.webapp' and existing_package.limitation:
+                    if existing_package.name == 'suffolklitlab-docassemble.webapp' and existing_package.limitation:
                         existing_package.limitation = None
                     install_pip_package(existing_package.name, existing_package.limitation)
             db.session.commit()
