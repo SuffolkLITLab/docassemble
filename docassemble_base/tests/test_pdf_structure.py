@@ -180,6 +180,68 @@ class StructureTests(unittest.TestCase):
                         result.pages[not tagged_first].Contents.read_bytes(),
                     )
 
+    def test_respects_reserved_parent_tree_next_key(self):
+        with fixture() as a, fixture() as b:
+            a.Root.StructTreeRoot.ParentTreeNextKey = 100
+            merger = PdfStructureMerger(a)
+            merger.append(b)
+            merger.finish()
+            self.assertEqual(int(a.pages[1].StructParents), 100)
+            self.assertEqual(int(a.Root.StructTreeRoot.ParentTreeNextKey), 103)
+
+    def test_rejects_missing_index_in_first_input(self):
+        with fixture() as pdf:
+            pdf.pages[0].StructParents = 42
+            with self.assertRaisesRegex(ValueError, "missing from ParentTree"):
+                PdfStructureMerger(pdf)
+
+    def test_unreachable_stale_object_does_not_break_merge(self):
+        with fixture() as a, fixture() as b:
+            orphan = b.make_indirect(Dictionary(StructParents=999))
+            merger = PdfStructureMerger(a)
+            merger.append(b)
+            merger.finish()
+            self.assertEqual(len(a.pages), 2)
+            self.assertEqual(int(orphan.StructParents), 999)
+
+    def test_untagged_stale_indices_are_removed_in_either_position(self):
+        for first_untagged in (False, True):
+            with fixture() as a, fixture() as b:
+                untagged = a if first_untagged else b
+                del untagged.Root.StructTreeRoot
+                merger = PdfStructureMerger(a)
+                merger.append(b)
+                merger.finish()
+                with reopen(a) as result:
+                    page = result.pages[0 if first_untagged else 1]
+                    self.assertNotIn("/StructParents", page.obj)
+                    self.assertNotIn("/StructParent", page.Annots[0])
+                    self.assertNotIn("/StructParents", page.Resources.XObject.Fm)
+                    self.assertFalse(result.Root.MarkInfo.Marked)
+
+    def test_shared_table_attribute_is_renamed_only_once(self):
+        with fixture() as a, fixture() as b:
+            root = b.Root.StructTreeRoot
+            paragraph, link, _ = root.K.K
+            link.ID = String("DA1_header")
+            root.IDTree = Dictionary(
+                Names=Array([String("DA1_header"), link, String("header"), paragraph])
+            )
+            shared = b.make_indirect(
+                Dictionary(O=Name.Table, Headers=Array([String("header")]))
+            )
+            paragraph.A = shared
+            link.A = shared
+            root.ClassMap.Style = shared
+            merger = PdfStructureMerger(a)
+            merger.append(b)
+            merger.finish()
+            with reopen(a) as result:
+                paragraph, link, _ = result.Root.StructTreeRoot.K[0].K[1].K
+                self.assertEqual(paragraph.A.objgen, link.A.objgen)
+                self.assertEqual(bytes(paragraph.A.Headers[0]), bytes(paragraph.ID))
+                self.assertNotEqual(bytes(paragraph.A.Headers[0]), bytes(link.ID))
+
     def test_rejects_missing_parent_index(self):
         with fixture() as a, fixture() as b:
             b.pages[0].StructParents = 42

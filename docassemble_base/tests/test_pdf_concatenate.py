@@ -80,6 +80,21 @@ class ConcatenateTests(unittest.TestCase):
                     self.concatenate(paths, pdfa=True)
                 convert.assert_not_called()
 
+    def test_rejected_pdfa_removes_temporary_output(self):
+        created = []
+        original = pandoc.tempfile.NamedTemporaryFile
+
+        def record(*args, **kwargs):
+            handle = original(*args, **kwargs)
+            created.append(handle.name)
+            return handle
+
+        with patch.object(pandoc.tempfile, "NamedTemporaryFile", side_effect=record):
+            with self.assertRaises(DAError):
+                self.concatenate(pdfa=True)
+        self.assertTrue(created)
+        self.assertTrue(all(not Path(path).exists() for path in created))
+
     def test_untagged_pdfa_still_uses_existing_converter(self):
         with fixture(tagged=False) as pdf:
             pdf.save(self.paths[0])

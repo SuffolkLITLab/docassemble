@@ -1030,8 +1030,10 @@ def concatenate_files(path_list, pdfa=False, password=None, owner_password=None,
             single.save(pdf_file.name)
     if pdfa:
         with Pdf.open(pdf_file.name) as pdf:
-            if '/StructTreeRoot' in pdf.Root:
-                raise DAError('PDF/A conversion of tagged concatenations would discard accessibility tags. Use pdfa=False to preserve tags.')
+            has_structure = '/StructTreeRoot' in pdf.Root
+        if has_structure:
+            os.unlink(pdf_file.name)
+            raise DAError('PDF/A conversion of tagged concatenations would discard accessibility tags. Use pdfa=False to preserve tags.')
         pdf_to_pdfa(pdf_file.name)
     if password or owner_password:
         pdf_encrypt(pdf_file.name, password, owner_password)

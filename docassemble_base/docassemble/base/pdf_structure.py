@@ -53,6 +53,47 @@ def _elements(root):
     yield from visit(root)
 
 
+def _page_objects(pdf):
+    """Walk reachable page objects, excluding the page-tree parent and orphans."""
+    seen = set()
+
+    def visit(value):
+        if not isinstance(value, (Dictionary, Stream, Array)):
+            return
+        if value.is_indirect:
+            if value.objgen in seen:
+                return
+            seen.add(value.objgen)
+        if isinstance(value, Array):
+            for child in value:
+                yield from visit(child)
+        else:
+            yield value
+            for key, child in value.items():
+                if key == "/Parent" and value.get("/Type") in (Name.Page, Name.Pages):
+                    continue
+                yield from visit(child)
+
+    for page in pdf.pages:
+        yield from visit(page.obj)
+
+
+def _rewrite_page_indices(pdf, remap):
+    for obj in _page_objects(pdf):
+        for key in ("/StructParents", "/StructParent"):
+            if key not in obj:
+                continue
+            if remap is None:
+                # Removed structure trees often leave these pointers behind.
+                # They must not attach an untagged page to another source's tags.
+                del obj[key]
+            else:
+                old = int(obj[key])
+                if old not in remap:
+                    raise ValueError("PDF structure index is missing from ParentTree")
+                obj[key] = remap[old]
+
+
 def ensure_pdf_metadata(pdf, *, merged=False):
     """Fill missing XMP from existing document information, without inventing it."""
     new_metadata = "/Metadata" not in pdf.Root
@@ -118,6 +159,7 @@ class PdfStructureMerger:
             self._check(self.root)
             children = _items(self.root.get("/K"))
         else:
+            _rewrite_page_indices(destination, None)
             self.root = destination.make_indirect(Dictionary(Type=Name.StructTreeRoot))
             children = []
         self.document = destination.make_indirect(
@@ -131,6 +173,11 @@ class PdfStructureMerger:
         self.ids = dict((bytes(k), v) for k, v in ids)
         if len(self.parents) != len(parents) or len(self.ids) != len(ids):
             raise ValueError("Duplicate PDF structure index key")
+        self.next_key = max(
+            max(self.parents, default=-1) + 1,
+            int(self.root.get("/ParentTreeNextKey", 0)),
+        )
+        _rewrite_page_indices(destination, {key: key for key in self.parents})
         self.has_structure = bool(children)
 
     @staticmethod
@@ -177,19 +224,9 @@ class PdfStructureMerger:
             if len(keys) != len(set(keys)):
                 raise ValueError("Duplicate PDF ParentTree key")
             # Indices on pages, annotations and Form XObjects all share this space.
-            next_key = max(self.parents, default=-1) + 1
-            remap = {old: next_key + i for i, old in enumerate(sorted(keys))}
-            for obj in source.objects:
-                if not isinstance(obj, (Dictionary, Stream)):
-                    continue
-                for key in ("/StructParents", "/StructParent"):
-                    if key in obj:
-                        old = int(obj[key])
-                        if old not in remap:
-                            raise ValueError(
-                                "PDF structure index is missing from ParentTree"
-                            )
-                        obj[key] = remap[old]
+            remap = {old: self.next_key + i for i, old in enumerate(sorted(keys))}
+            _rewrite_page_indices(source, remap)
+            self.next_key += len(keys)
             source_root.ParentTree = Dictionary(
                 Nums=Array(
                     [
@@ -200,6 +237,8 @@ class PdfStructureMerger:
                 )
             )
             self._rename_maps(source_root)
+        else:
+            _rewrite_page_indices(source, None)
         # Copy pages before their structure: qpdf then maps /Pg, /Obj and /Stm
         # references to the actual copied pages, annotations and streams.
         start = len(self.pdf.pages)
@@ -287,7 +326,13 @@ class PdfStructureMerger:
                 e.ID = String(id_map[bytes(e.ID)])
 
         # Table headers refer to IDs by string, including attributes in ClassMap.
+        header_objects = set()
+
         def rename_headers(value):
+            if isinstance(value, (Array, Dictionary)) and value.is_indirect:
+                if value.objgen in header_objects:
+                    return
+                header_objects.add(value.objgen)
             if isinstance(value, Array):
                 for child in value:
                     rename_headers(child)
@@ -327,7 +372,7 @@ class PdfStructureMerger:
                     ]
                 )
             )
-            self.root.ParentTreeNextKey = max(self.parents, default=-1) + 1
+            self.root.ParentTreeNextKey = self.next_key
             if self.ids:
                 self.root.IDTree = Dictionary(
                     Names=Array(
@@ -345,4 +390,6 @@ class PdfStructureMerger:
                 self.pdf.Root.MarkInfo.UserProperties = True
             if not self.complete or self.suspects:
                 self.pdf.Root.MarkInfo.Suspects = True
+        elif "/MarkInfo" in self.pdf.Root:
+            self.pdf.Root.MarkInfo.Marked = False
         ensure_pdf_metadata(self.pdf, merged=True)
