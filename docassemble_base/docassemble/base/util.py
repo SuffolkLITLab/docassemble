@@ -10231,7 +10231,7 @@ def pdf_concatenate(*pargs, **kwargs):
     if len(paths) == 0:
         raise DAError("pdf_concatenate: no valid files to concatenate")
     (owner_password, password) = get_passwords(kwargs.get('password', None))
-    pdf_path = docassemble.base.pandoc.concatenate_files(paths, pdfa=kwargs.get('pdfa', False), password=password, owner_password=owner_password)
+    pdf_path = docassemble.base.pandoc.concatenate_files(paths, pdfa=kwargs.get('pdfa', False), password=password, owner_password=owner_password, title=kwargs.get('title', None))
     pdf_file = kwargs.get('output_to', None)
     if pdf_file is None:
         pdf_file = DAFile()
