@@ -12849,7 +12849,9 @@ def pdf_concatenate(*pargs, **kwargs):
             - ``output_to`` (DAFile or None): Target file to write into.
             - ``filename`` (str): Filename for the resulting file. Defaults
               to ``'file.pdf'``.
-            - ``pdfa`` (bool): If True, convert to PDF/A.
+            - ``title`` (str): Set the PDF document and XMP title.
+            - ``pdfa`` (bool): If True, convert to PDF/A. Tagged inputs
+              are rejected because this conversion discards their tags.
             - ``password`` (str, list, or dict): Password(s) to apply to the
               output PDF.
 
@@ -12858,14 +12860,16 @@ def pdf_concatenate(*pargs, **kwargs):
 
     Raises:
         DAError: If no valid files are provided, or ``output_to`` is not a
-            DAFile.
+            DAFile, or PDF/A conversion would discard accessibility tags.
+        ValueError: If tagged structure is malformed or uses unsupported
+            PDF 2.0 namespaces.
     """
     paths = []
     get_pdf_paths(list(pargs), paths)
     if len(paths) == 0:
         raise DAError("pdf_concatenate: no valid files to concatenate")
     (owner_password, password) = get_passwords(kwargs.get('password', None))
-    pdf_path = concatenate_files(paths, pdfa=kwargs.get('pdfa', False), password=password, owner_password=owner_password)
+    pdf_path = concatenate_files(paths, pdfa=kwargs.get('pdfa', False), password=password, owner_password=owner_password, title=kwargs.get('title', None))
     pdf_file = kwargs.get('output_to', None)
     if pdf_file is None:
         pdf_file = DAFile()
