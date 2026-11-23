@@ -560,7 +560,7 @@
         .on("focus", $.proxy(this.focus, this))
         .on("change", $.proxy(this.change, this))
         .on("blur", $.proxy(this.blur, this))
-        .on("click", $.proxy(this.click, this))
+        .on("click", $.proxy(this.openList, this))
         .on("keypress", $.proxy(this.keypress, this))
         .on("keyup", $.proxy(this.keyup, this));
 
@@ -683,8 +683,11 @@
             return;
           }
           if (!this.selected) {
-            //this.select();
-            this.blur();
+            if (this.$menu.find(".active").length) {
+              this.select();
+            } else {
+              this.blur();
+            }
           } else {
             var val = this.$element.val();
             var opts = this.$menu.find("li");
@@ -711,7 +714,11 @@
             return;
           }
           if (!this.selected) {
-            this.blur();
+            if (this.$menu.find(".active").length) {
+              this.select();
+            } else {
+              this.blur();
+            }
           } else {
             var val = this.$element.val();
             var opts = this.$menu.find("li");
@@ -818,6 +825,16 @@
       }
     },
 
+    openList: function (e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      daFetchAjaxTimeoutFetchAfter = false;
+      daFetchAcceptIncoming = false;
+      this.lookup();
+    },
+
     click: function (e) {
       //console.log("click");
       if (e) {
@@ -826,8 +843,15 @@
       }
       daFetchAjaxTimeoutFetchAfter = false;
       daFetchAcceptIncoming = false;
+      var $li = e ? $(e.target).closest("li") : $();
+      if ($li.length) {
+        this.$menu
+          .find(".active")
+          .removeClass("active")
+          .attr("aria-selected", false);
+        this.setActive($li);
+      }
       this.select();
-      this.lookup();
       this.$element.focus();
     },
 

@@ -28633,6 +28633,9 @@ function daShowError(error) {
     select: function () {
       //console.log("select");
       var val = this.$menu.find(".active").attr("data-value");
+      if (val === undefined) {
+        return;
+      }
       var oldVal;
       var triggerElement = false;
       var triggerTarget = false;
@@ -28800,7 +28803,7 @@ function daShowError(error) {
       return item.replace(
         new RegExp("(" + query + ")", "ig"),
         function ($1, match) {
-          return "<b>" + match + "</b>";
+          return "<mark>" + match + "</mark>";
         },
       );
     },
@@ -28818,7 +28821,7 @@ function daShowError(error) {
         return i[0];
       });
 
-      this.setActive(items.first());
+      //this.setActive(items.first());
       this.$menu.html(items);
       return this;
     },
@@ -28942,6 +28945,7 @@ function daShowError(error) {
         .on("focus", $.proxy(this.focus, this))
         .on("change", $.proxy(this.change, this))
         .on("blur", $.proxy(this.blur, this))
+        .on("click", $.proxy(this.openList, this))
         .on("keypress", $.proxy(this.keypress, this))
         .on("keyup", $.proxy(this.keyup, this));
 
@@ -29053,7 +29057,6 @@ function daShowError(error) {
         case 18: // alt
           break;
 
-        case 9: // tab
         case 13: // enter
           if (e) {
             e.stopPropagation();
@@ -29065,7 +29068,42 @@ function daShowError(error) {
             return;
           }
           if (!this.selected) {
-            this.select();
+            if (this.$menu.find(".active").length) {
+              this.select();
+            } else {
+              this.blur();
+            }
+          } else {
+            var val = this.$element.val();
+            var opts = this.$menu.find("li");
+            var n = opts.length;
+            for (var i = 0; i < n; ++i) {
+              if ($(opts[i]).attr("data-value") == val) {
+                e.stopPropagation();
+                e.preventDefault();
+                $(opts[i]).click();
+                return false;
+              }
+            }
+          }
+          break;
+
+        case 9: //tab
+          if (e) {
+            e.stopPropagation();
+            e.preventDefault();
+          }
+          daFetchAjaxTimeoutFetchAfter = false;
+          daFetchAcceptIncoming = false;
+          if (!this.shown) {
+            return;
+          }
+          if (!this.selected) {
+            if (this.$menu.find(".active").length) {
+              this.select();
+            } else {
+              this.blur();
+            }
           } else {
             var val = this.$element.val();
             var opts = this.$menu.find("li");
@@ -29172,6 +29210,16 @@ function daShowError(error) {
       }
     },
 
+    openList: function (e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      daFetchAjaxTimeoutFetchAfter = false;
+      daFetchAcceptIncoming = false;
+      this.lookup();
+    },
+
     click: function (e) {
       //console.log("click");
       if (e) {
@@ -29180,6 +29228,14 @@ function daShowError(error) {
       }
       daFetchAjaxTimeoutFetchAfter = false;
       daFetchAcceptIncoming = false;
+      var $li = e ? $(e.target).closest("li") : $();
+      if ($li.length) {
+        this.$menu
+          .find(".active")
+          .removeClass("active")
+          .attr("aria-selected", false);
+        this.setActive($li);
+      }
       this.select();
       this.$element.focus();
     },
