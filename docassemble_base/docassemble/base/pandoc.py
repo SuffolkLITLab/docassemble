@@ -13,7 +13,6 @@ import urllib.request
 import convertapi
 import requests
 from pikepdf import Pdf
-from docassemble.base.pdf_structure import PdfStructureMerger, ensure_pdf_metadata, ensure_pdf_file_metadata
 import docassemble.base.filter
 import docassemble.base.functions
 from docassemble.base.config import daconfig
@@ -390,7 +389,6 @@ class MyPandoc:
 
 
 def word_to_pdf(in_file, in_format, out_file, pdfa=False, password=None, owner_password=None, update_refs=False, tagged=False, filename=None, retry=True):
-    metadata_password = password or owner_password or ''
     if filename is None:
         filename = 'file'
     filename = docassemble.base.functions.secure_filename(filename)
@@ -570,8 +568,6 @@ def word_to_pdf(in_file, in_format, out_file, pdfa=False, password=None, owner_p
     if os.path.isfile(to_file) and os.path.getsize(to_file) == 0:
         result = 1
     if result == 0:
-        if tagged or pdfa:
-            ensure_pdf_file_metadata(to_file, password=metadata_password)
         if password:
             pdf_encrypt(to_file, password, owner_password)
         shutil.copyfile(to_file, out_file)
@@ -875,7 +871,7 @@ def initialize_libreoffice():
         logmessage("Could not copy LibreOffice macro into place")
 
 
-def concatenate_files(path_list, pdfa=False, password=None, owner_password=None, title=None):
+def concatenate_files(path_list, pdfa=False, password=None, owner_password=None):
     pdf_file = tempfile.NamedTemporaryFile(prefix="datemp", mode="wb", suffix=".pdf", delete=False)
     new_path_list = []
     for path in path_list:
@@ -917,7 +913,6 @@ def concatenate_files(path_list, pdfa=False, password=None, owner_password=None,
         shutil.copyfile(new_path_list[0], pdf_file.name)
     else:
         with Pdf.open(new_path_list[0]) as original:
-            structure = PdfStructureMerger(original)
             need_appearances = False
             try:
                 if original.Root.AcroForm.NeedAppearances:
@@ -932,32 +927,14 @@ def concatenate_files(path_list, pdfa=False, password=None, owner_password=None,
                                 need_appearances = True
                         except:
                             pass
-                    structure.append(additional_pdf)
+                    original.pages.extend(additional_pdf.pages)
             if need_appearances:
                 try:
                     original.Root.AcroForm.NeedAppearances = True
                 except:
                     logmessage("concatenate_files: an additional file had an AcroForm with NeedAppearances but setting NeedAppearances on the final document resulted in an error")
-            structure.finish()
-            if title:
-                original.docinfo.Title = title
-                with original.open_metadata(set_pikepdf_as_editor=False) as metadata:
-                    metadata['dc:title'] = title
-                ensure_pdf_metadata(original)
-            original.save(pdf_file.name, min_version=structure.pdf_version)
-    if len(new_path_list) == 1 and title:
-        with Pdf.open(pdf_file.name, allow_overwriting_input=True) as single:
-            single.docinfo.Title = title
-            with single.open_metadata(set_pikepdf_as_editor=False) as metadata:
-                metadata['dc:title'] = title
-            ensure_pdf_metadata(single)
-            single.save(pdf_file.name)
+            original.save(pdf_file.name)
     if pdfa:
-        with Pdf.open(pdf_file.name) as pdf:
-            has_structure = '/StructTreeRoot' in pdf.Root
-        if has_structure:
-            os.unlink(pdf_file.name)
-            raise DAError('PDF/A conversion of tagged concatenations would discard accessibility tags. Use pdfa=False to preserve tags.')
         pdf_to_pdfa(pdf_file.name)
     if password or owner_password:
         pdf_encrypt(pdf_file.name, password, owner_password)
