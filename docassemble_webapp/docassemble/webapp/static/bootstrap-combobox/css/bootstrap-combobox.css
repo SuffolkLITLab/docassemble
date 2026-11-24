@@ -40,3 +40,9 @@
 .combobox-container button[aria-expanded="true"] svg {
   transform: rotate(180deg) translate(0, -1px);
 }
+
+mark {
+  font-weight: bolder;
+  padding: 0px;
+  background-color: none;
+}
