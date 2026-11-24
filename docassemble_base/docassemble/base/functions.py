@@ -32,7 +32,7 @@ from pylatex.utils import escape_latex
 from user_agents import parse as ua_parse
 import phonenumbers
 import werkzeug.utils
-from docassemble.base.background import bg_action
+from docassemble.base.background import bg_action, MyAsyncResult
 from docassemble.base.error import (
     ForcedNameError,
     QuestionError,
